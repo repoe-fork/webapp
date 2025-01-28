@@ -19,7 +19,7 @@ export const LayoutComponent: React.FC<{ layout: Layout }> = ({ layout }) => {
             max[0] = Math.max(max[0], x)
             max[1] = Math.max(max[1], y)
         }
-        return [`0 0 ${max[0] + min[0]} ${max[1] + min[1]}`, (max[0] - min[0]) / 200]
+        return [`0 0 ${max[0] + min[0]} ${max[1] + min[1]}`, Math.ceil((max[0] - min[0]) / 200)]
     }, [graph.nodes])
 
     if (!graph.nodes?.length) {
