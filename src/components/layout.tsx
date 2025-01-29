@@ -1,13 +1,9 @@
 import {queryOptions, useSuspenseQuery} from "@tanstack/react-query";
 import React, {useMemo} from "react";
 import {Layout} from "../routes/areas";
-//@ts-ignore
-import palette from 'google-palette'
 import "color-legend-element";
-
-export interface IntrinsicElements {
-    "color-legend": any;
-}
+// @ts-ignore
+import palette from 'google-palette';
 
 export const getLayout = (filename: string) =>
     queryOptions({
@@ -18,7 +14,7 @@ export const getLayout = (filename: string) =>
 export const LayoutComponent: React.FC<{ layout: Layout }> = ({layout}) => {
     const graph = useSuspenseQuery(getLayout(layout.file)).data
 
-    const [viewbox, scale, colorMap] = useMemo(() => {
+    const [viewBox, scale, colorMap] = useMemo(() => {
         const names = new Set<string>()
         const min = [Infinity, Infinity], max = [-Infinity, -Infinity]
         for (let {x, y, room} of graph.nodes || []) {
@@ -34,7 +30,7 @@ export const LayoutComponent: React.FC<{ layout: Layout }> = ({layout}) => {
         return [
             `0 0 ${max[0] + min[0]} ${max[1] + min[1]}`,
             (max[0] - min[0]) / 200,
-            Object.fromEntries([...names].sort().map(((n, i) => [n, '#' + colors[i]]))),
+            Object.fromEntries([...names].map(((n, i) => [n, '#' + colors[i]]))),
         ]
     }, [graph.nodes])
 
@@ -43,11 +39,9 @@ export const LayoutComponent: React.FC<{ layout: Layout }> = ({layout}) => {
         return <>No data</>
     }
 
-    // @ts-ignore
-    // @ts-ignore
-    return <div>
+    return <div style={{display: "flex", flexDirection: "row"}}>
         <div style={{maxWidth: "500px"}}>
-            <svg viewBox={viewbox} style={{width: "100%", border: "1px solid blue"}}>
+            <svg viewBox={viewBox} style={{width: "100%", border: "1px solid blue"}}>
                 {graph.edges.map(({from, to, path, unknown}: any) => {
                     const start = graph.nodes[from]
                     const end = graph.nodes[to]
@@ -69,14 +63,14 @@ export const LayoutComponent: React.FC<{ layout: Layout }> = ({layout}) => {
                 )}
             </svg>
         </div>
-        <div style={{float: "left", "--cle-columns": 1}}>
+        <div>
+            {/* @ts-ignore */}
             <color-legend
                 titleText={layout.file}
                 scaleType="categorical"
-                domain={Object.keys(colorMap)}
+                domain={Object.keys(colorMap).map(k => k || "<unknown>")}
                 range={Object.values(colorMap)}
-            >
-            </color-legend>
+            />
         </div>
     </div>
 }
