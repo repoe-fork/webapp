@@ -33,13 +33,13 @@ export const Route = createFileRoute('/areas')({
 
 function AreasComponent() {
   const query = useSuspenseQuery(getAreas)
-  const areas: Area[] = query.data
+  const areas: Record<string, Area> = query.data
 
   return (
     <div className="p-2">
       <Drawer variant="persistent" anchor="right" open>
         <List>
-          {areas.map(({ id, name }) => (
+          {Object.values(areas).map(({ id, name }) => (
             <ListItem key={id} disablePadding>
               <ListItemButton component={Link} to={`/areas/${id}`}>
                 <ListItemText primary={name} />

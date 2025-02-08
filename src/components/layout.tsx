@@ -42,18 +42,17 @@ export const LayoutComponent: React.FC<{ layout: Layout }> = ({layout}) => {
     return <div style={{display: "flex", flexDirection: "row"}}>
         <div style={{maxWidth: "500px"}}>
             <svg viewBox={viewBox} style={{width: "100%", border: "1px solid blue"}}>
-                {graph.edges.map(({from, to, path, unknown}: any) => {
+                {graph.edges.map(({from, to, path, edge_type, color}: any) => {
                     const start = graph.nodes[from]
                     const end = graph.nodes[to]
 
                     return <polyline
                         points={`${start.x}, ${start.y} ${path.map(([x, y]: any) => `${x}, ${y}`).join(' ')} ${end.x}, ${end.y}`}
                         strokeWidth={3 * scale}
-                        stroke="gray"
-                        strokeOpacity={0.6}
+                        stroke={color || "#80808080"}
                         fill="none"
                     >
-                        <title>{unknown?.find((v: any) => typeof v === 'string') || ""}</title>
+                        {edge_type ? <title>{edge_type}</title> : <></>}
                     </polyline>
                 })}
                 {graph.nodes.map(({x, y, room}: any) =>
