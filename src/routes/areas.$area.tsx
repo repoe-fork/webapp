@@ -9,8 +9,8 @@ export const Route = createFileRoute('/areas/$area')({
 
 function AreaComponent() {
     const id = Route.useParams().area
-    const areas: Area[] = useSuspenseQuery(getAreas).data
-    const area = areas.find((a: Area) => a.id == id)!;
+    const areas: Record<string, Area> = useSuspenseQuery(getAreas).data
+    const area = areas[id];
     return <div>
         <h3>{area.name}</h3>
         {area.layouts?.map(l => <LayoutComponent key={l.id} layout={l} />)}
