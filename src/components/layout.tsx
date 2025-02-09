@@ -1,9 +1,9 @@
 import {queryOptions, useSuspenseQuery} from "@tanstack/react-query";
 import React, {useMemo} from "react";
-import {Layout} from "../routes/areas";
 import "color-legend-element";
 // @ts-ignore
 import palette from 'google-palette';
+import {Topology} from "types/world_areas";
 
 export const getLayout = (filename: string) =>
     queryOptions({
@@ -11,7 +11,45 @@ export const getLayout = (filename: string) =>
         queryFn: () => fetch(`https://repoe-fork.github.io/poe2/${filename}.json`).then(r => r.json()),
     })
 
-export const LayoutComponent: React.FC<{ layout: Layout }> = ({layout}) => {
+export interface Edge {
+    from: string,
+    to: string,
+    path: [number, number][],
+    color?: string,
+    edge_type: string,
+}
+
+const Edge: React.FC<{ graph: any, scale: number } & Edge> = ({
+                                                                  graph,
+                                                                  from,
+                                                                  to,
+                                                                  path,
+                                                                  scale,
+                                                                  edge_type,
+                                                                  color = "#80808080"
+                                                              }) => {
+    const start = graph.nodes[from]
+    const end = graph.nodes[to]
+
+    return <>
+        <polyline
+            points={`${start.x}, ${start.y} ${path.map(([x, y]: any) => `${x}, ${y}`).join(' ')} ${end.x}, ${end.y}`}
+            strokeWidth={2 * scale}
+            stroke="gray"
+            fill="none"
+        />
+        <polyline
+            points={`${start.x}, ${start.y} ${path.map(([x, y]: any) => `${x}, ${y}`).join(' ')} ${end.x}, ${end.y}`}
+            strokeWidth={3 * scale}
+            stroke={color}
+            fill="none"
+        >
+            {edge_type ? <title>{edge_type}</title> : <></>}
+        </polyline>
+    </>
+}
+
+export const LayoutComponent: React.FC<{ layout: Topology }> = ({layout}) => {
     const graph = useSuspenseQuery(getLayout(layout.file)).data
 
     const [viewBox, scale, colorMap] = useMemo(() => {
@@ -40,20 +78,10 @@ export const LayoutComponent: React.FC<{ layout: Layout }> = ({layout}) => {
     }
 
     return <div style={{display: "flex", flexDirection: "row"}}>
-        <div style={{maxWidth: "500px"}}>
-            <svg viewBox={viewBox} style={{width: "100%", border: "1px solid blue"}}>
-                {graph.edges.map(({from, to, path, edge_type, color}: any) => {
-                    const start = graph.nodes[from]
-                    const end = graph.nodes[to]
-
-                    return <polyline
-                        points={`${start.x}, ${start.y} ${path.map(([x, y]: any) => `${x}, ${y}`).join(' ')} ${end.x}, ${end.y}`}
-                        strokeWidth={3 * scale}
-                        stroke={color || "#80808080"}
-                        fill="none"
-                    >
-                        {edge_type ? <title>{edge_type}</title> : <></>}
-                    </polyline>
+        <div style={{maxWidth: "500px", margin: "5px"}}>
+            <svg viewBox={viewBox} style={{width: "100%", backgroundColor: "#222"}}>
+                {graph.edges.map((edge: Edge) => {
+                    return <Edge {...edge} graph={graph} scale={scale} key={`${edge.from}-${edge.to}`}/>;
                 })}
                 {graph.nodes.map(({x, y, room}: any) =>
                     <circle cx={x} cy={y} r={(room ? 4 : 3) * scale} fill={colorMap[room]}>

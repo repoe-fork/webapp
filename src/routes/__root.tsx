@@ -1,8 +1,8 @@
 import * as React from 'react'
-import { Link, Outlet, createRootRoute, createRootRouteWithContext } from '@tanstack/react-router'
-import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import { AppBar, CssBaseline } from '@mui/material'
-import { Context } from '../context'
+import {createRootRouteWithContext, Link, Outlet} from '@tanstack/react-router'
+import {TanStackRouterDevtools} from '@tanstack/router-devtools'
+import {AppBar} from '@mui/material'
+import {Context} from 'context'
 
 export const Route = createRootRouteWithContext<Context>()({
   component: RootComponent,
@@ -11,7 +11,6 @@ export const Route = createRootRouteWithContext<Context>()({
 function RootComponent() {
   return (
     <>
-      <CssBaseline />
       <AppBar position="static">
         <Link
           to="/"

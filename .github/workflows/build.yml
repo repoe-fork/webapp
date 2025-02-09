@@ -24,6 +24,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
       - run: |
+          ./generate-types.sh
           npm ci
           npm run build
       - name: upload pages
