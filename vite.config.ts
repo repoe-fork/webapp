@@ -5,6 +5,6 @@ import TsConfig from 'vite-tsconfig-paths'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: "webapp",
+  base: "/webapp",
   plugins: [TsConfig(), TanStackRouterVite({}), react()],
 })
