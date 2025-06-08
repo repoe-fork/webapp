@@ -1,7 +1,7 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import initSqlJs, { Database } from "sql.js";
+import initSqlJs, { Database } from "fts5-sql-bundle";
 // @ts-ignore
-import wasm from "sql.js/dist/sql-wasm.wasm?url";
+import wasm from "fts5-sql-bundle/dist/sql-wasm.wasm?url";
 import {
   createContext,
   Dispatch,
@@ -29,7 +29,7 @@ export const getDatabase = (url: string) =>
   queryOptions({
     queryKey: ["database", url],
     queryFn: (): Promise<Database> =>
-      fetch(url)
+      fetch(url, { cache: "default" })
         .then((r) => r.arrayBuffer())
         .then((b) => new SQL.Database(new Uint8Array(b))),
   });
@@ -74,7 +74,7 @@ const BasicInput: FC = () => {
     setPage(0); // Reset to first page when query changes
   };
 
-  return <TextareaAutosize value={sql} onChange={handleSqlChange} />;
+  return <TextareaAutosize style={{ width: "100%" }} value={sql} onChange={handleSqlChange} />;
 };
 
 export const SQLContext = createContext<{
@@ -144,7 +144,7 @@ export const SQLViewer: FC<
   }>
 > = ({ url, children = <BasicInput /> }) => {
   const query = useSuspenseQuery(getDatabase(url));
-  const [sql, setSql] = useState("select sqlite_version()");
+  const [sql, setSql] = useState("SELECT * FROM \"English_search\"('search for anything')");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10); // Default to 10 rows per page
 
@@ -163,11 +163,11 @@ export const SQLViewer: FC<
 
   // Function to handle page changes
   const handleNextPage = () => {
-    setPage(prev => prev + 1);
+    setPage((prev) => prev + 1);
   };
 
   const handlePrevPage = () => {
-    setPage(prev => Math.max(0, prev - 1));
+    setPage((prev) => Math.max(0, prev - 1));
   };
 
   // Check if there are results and if the current page has data
@@ -182,18 +182,12 @@ export const SQLViewer: FC<
 
       {/* Pagination controls */}
       {pageSize > 0 && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
-          <button 
-            onClick={handlePrevPage} 
-            disabled={page === 0}
-          >
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
+          <button onClick={handlePrevPage} disabled={page === 0}>
             Previous Page
           </button>
           <span>Page {page + 1}</span>
-          <button 
-            onClick={handleNextPage} 
-            disabled={!hasMorePages}
-          >
+          <button onClick={handleNextPage} disabled={!hasMorePages}>
             Next Page
           </button>
         </div>

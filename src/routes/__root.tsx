@@ -28,11 +28,20 @@ function RootComponent() {
           Areas
         </Link>
         <Link
-          to="/sql"
+          to="/sql/$sequel"
+          params={{ sequel: "1" }}
           activeProps={{
             className: "font-bold",
           }}>
-          Sql (poe1)
+          poe1 sqlite
+        </Link>
+        <Link
+          to="/sql/$sequel"
+          params={{ sequel: "2" }}
+          activeProps={{
+            className: "font-bold",
+          }}>
+          poe2 sqlite
         </Link>
       </AppBar>
       <Outlet />

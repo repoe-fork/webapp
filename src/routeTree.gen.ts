@@ -11,19 +11,13 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as SqlImport } from './routes/sql'
 import { Route as AreasImport } from './routes/areas'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
+import { Route as SqlSequelImport } from './routes/sql.$sequel'
 import { Route as AreasAreaImport } from './routes/areas.$area'
 
 // Create/Update Routes
-
-const SqlRoute = SqlImport.update({
-  id: '/sql',
-  path: '/sql',
-  getParentRoute: () => rootRoute,
-} as any)
 
 const AreasRoute = AreasImport.update({
   id: '/areas',
@@ -40,6 +34,12 @@ const AboutRoute = AboutImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const SqlSequelRoute = SqlSequelImport.update({
+  id: '/sql/$sequel',
+  path: '/sql/$sequel',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -74,19 +74,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AreasImport
       parentRoute: typeof rootRoute
     }
-    '/sql': {
-      id: '/sql'
-      path: '/sql'
-      fullPath: '/sql'
-      preLoaderRoute: typeof SqlImport
-      parentRoute: typeof rootRoute
-    }
     '/areas/$area': {
       id: '/areas/$area'
       path: '/$area'
       fullPath: '/areas/$area'
       preLoaderRoute: typeof AreasAreaImport
       parentRoute: typeof AreasImport
+    }
+    '/sql/$sequel': {
+      id: '/sql/$sequel'
+      path: '/sql/$sequel'
+      fullPath: '/sql/$sequel'
+      preLoaderRoute: typeof SqlSequelImport
+      parentRoute: typeof rootRoute
     }
   }
 }
@@ -107,16 +107,16 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/areas': typeof AreasRouteWithChildren
-  '/sql': typeof SqlRoute
   '/areas/$area': typeof AreasAreaRoute
+  '/sql/$sequel': typeof SqlSequelRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/areas': typeof AreasRouteWithChildren
-  '/sql': typeof SqlRoute
   '/areas/$area': typeof AreasAreaRoute
+  '/sql/$sequel': typeof SqlSequelRoute
 }
 
 export interface FileRoutesById {
@@ -124,16 +124,16 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/areas': typeof AreasRouteWithChildren
-  '/sql': typeof SqlRoute
   '/areas/$area': typeof AreasAreaRoute
+  '/sql/$sequel': typeof SqlSequelRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/areas' | '/sql' | '/areas/$area'
+  fullPaths: '/' | '/about' | '/areas' | '/areas/$area' | '/sql/$sequel'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/areas' | '/sql' | '/areas/$area'
-  id: '__root__' | '/' | '/about' | '/areas' | '/sql' | '/areas/$area'
+  to: '/' | '/about' | '/areas' | '/areas/$area' | '/sql/$sequel'
+  id: '__root__' | '/' | '/about' | '/areas' | '/areas/$area' | '/sql/$sequel'
   fileRoutesById: FileRoutesById
 }
 
@@ -141,14 +141,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AreasRoute: typeof AreasRouteWithChildren
-  SqlRoute: typeof SqlRoute
+  SqlSequelRoute: typeof SqlSequelRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AreasRoute: AreasRouteWithChildren,
-  SqlRoute: SqlRoute,
+  SqlSequelRoute: SqlSequelRoute,
 }
 
 export const routeTree = rootRoute
@@ -164,7 +164,7 @@ export const routeTree = rootRoute
         "/",
         "/about",
         "/areas",
-        "/sql"
+        "/sql/$sequel"
       ]
     },
     "/": {
@@ -179,12 +179,12 @@ export const routeTree = rootRoute
         "/areas/$area"
       ]
     },
-    "/sql": {
-      "filePath": "sql.tsx"
-    },
     "/areas/$area": {
       "filePath": "areas.$area.tsx",
       "parent": "/areas"
+    },
+    "/sql/$sequel": {
+      "filePath": "sql.$sequel.tsx"
     }
   }
 }
