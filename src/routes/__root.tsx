@@ -27,6 +27,13 @@ function RootComponent() {
           }}>
           Areas
         </Link>
+        <Link
+          to="/sql"
+          activeProps={{
+            className: "font-bold",
+          }}>
+          Sql (poe1)
+        </Link>
       </AppBar>
       <Outlet />
       <TanStackRouterDevtools position="bottom-right" />
