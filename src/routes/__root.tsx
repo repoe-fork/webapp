@@ -1,6 +1,5 @@
 import * as React from "react";
 import { createRootRouteWithContext, Link, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { AppBar } from "@mui/material";
 import { Context } from "context";
 
@@ -45,7 +44,6 @@ function RootComponent() {
         </Link>
       </AppBar>
       <Outlet />
-      <TanStackRouterDevtools position="bottom-right" />
     </>
   );
 }

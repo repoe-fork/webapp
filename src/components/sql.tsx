@@ -23,7 +23,7 @@ import {
   TextareaAutosize,
 } from "@mui/material";
 
-const SQL = await initSqlJs({ locateFile: () => wasm });
+const SQL = initSqlJs({ locateFile: () => wasm });
 
 export const getDatabase = (url: string) =>
   queryOptions({
@@ -31,7 +31,7 @@ export const getDatabase = (url: string) =>
     queryFn: (): Promise<Database> =>
       fetch(url, { cache: "default" })
         .then((r) => r.arrayBuffer())
-        .then((b) => new SQL.Database(new Uint8Array(b))),
+        .then((b) => SQL.then((({Database}) => new Database(new Uint8Array(b))))),
   });
 
 type SqlValue = number | string | Uint8Array | null;

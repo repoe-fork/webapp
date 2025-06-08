@@ -3,7 +3,7 @@ name: build and deploy
 on:
   workflow_dispatch:
   push:
-    branches: ["develop"]
+    branches: [ "develop" ]
 
 permissions:
   contents: read
