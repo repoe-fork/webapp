@@ -1,14 +1,6 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import initSqlJs, { Database } from "sql.js";
-import {
-  Component,
-  ComponentType,
-  Dispatch,
-  FC,
-  SetStateAction,
-  useMemo,
-  useState,
-} from "react";
+import { Component, ComponentType, Dispatch, FC, SetStateAction, useMemo, useState } from "react";
 import {
   Alert,
   Table,
@@ -42,15 +34,10 @@ type Input = ComponentType<{
 }>;
 
 const BasicInput: Input = ({ sql, setSql }) => (
-  <TextareaAutosize
-    value={sql}
-    onChange={(e) => setSql(e.currentTarget.value)}
-  />
+  <TextareaAutosize value={sql} onChange={(e) => setSql(e.currentTarget.value)} />
 );
 
-const ResultTable: FC<{ result: QueryExecResult }> = ({
-  result: { columns, values },
-}) => {
+const ResultTable: FC<{ result: QueryExecResult }> = ({ result: { columns, values } }) => {
   return (
     <TableContainer>
       <Table>

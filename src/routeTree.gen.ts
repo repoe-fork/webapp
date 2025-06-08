@@ -10,131 +10,131 @@
 
 // Import Routes
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as AreasImport } from './routes/areas'
-import { Route as AboutImport } from './routes/about'
-import { Route as IndexImport } from './routes/index'
-import { Route as AreasAreaImport } from './routes/areas.$area'
+import { Route as rootRoute } from "./routes/__root";
+import { Route as AreasImport } from "./routes/areas";
+import { Route as AboutImport } from "./routes/about";
+import { Route as IndexImport } from "./routes/index";
+import { Route as AreasAreaImport } from "./routes/areas.$area";
 
 // Create/Update Routes
 
 const AreasRoute = AreasImport.update({
-  id: '/areas',
-  path: '/areas',
+  id: "/areas",
+  path: "/areas",
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const AboutRoute = AboutImport.update({
-  id: '/about',
-  path: '/about',
+  id: "/about",
+  path: "/about",
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const IndexRoute = IndexImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRoute,
-} as any)
+} as any);
 
 const AreasAreaRoute = AreasAreaImport.update({
-  id: '/$area',
-  path: '/$area',
+  id: "/$area",
+  path: "/$area",
   getParentRoute: () => AreasRoute,
-} as any)
+} as any);
 
 // Populate the FileRoutesByPath interface
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
-      parentRoute: typeof rootRoute
-    }
-    '/areas': {
-      id: '/areas'
-      path: '/areas'
-      fullPath: '/areas'
-      preLoaderRoute: typeof AreasImport
-      parentRoute: typeof rootRoute
-    }
-    '/areas/$area': {
-      id: '/areas/$area'
-      path: '/$area'
-      fullPath: '/areas/$area'
-      preLoaderRoute: typeof AreasAreaImport
-      parentRoute: typeof AreasImport
-    }
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/about": {
+      id: "/about";
+      path: "/about";
+      fullPath: "/about";
+      preLoaderRoute: typeof AboutImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/areas": {
+      id: "/areas";
+      path: "/areas";
+      fullPath: "/areas";
+      preLoaderRoute: typeof AreasImport;
+      parentRoute: typeof rootRoute;
+    };
+    "/areas/$area": {
+      id: "/areas/$area";
+      path: "/$area";
+      fullPath: "/areas/$area";
+      preLoaderRoute: typeof AreasAreaImport;
+      parentRoute: typeof AreasImport;
+    };
   }
 }
 
 // Create and export the route tree
 
 interface AreasRouteChildren {
-  AreasAreaRoute: typeof AreasAreaRoute
+  AreasAreaRoute: typeof AreasAreaRoute;
 }
 
 const AreasRouteChildren: AreasRouteChildren = {
   AreasAreaRoute: AreasAreaRoute,
-}
+};
 
-const AreasRouteWithChildren = AreasRoute._addFileChildren(AreasRouteChildren)
+const AreasRouteWithChildren = AreasRoute._addFileChildren(AreasRouteChildren);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/areas': typeof AreasRouteWithChildren
-  '/areas/$area': typeof AreasAreaRoute
+  "/": typeof IndexRoute;
+  "/about": typeof AboutRoute;
+  "/areas": typeof AreasRouteWithChildren;
+  "/areas/$area": typeof AreasAreaRoute;
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/areas': typeof AreasRouteWithChildren
-  '/areas/$area': typeof AreasAreaRoute
+  "/": typeof IndexRoute;
+  "/about": typeof AboutRoute;
+  "/areas": typeof AreasRouteWithChildren;
+  "/areas/$area": typeof AreasAreaRoute;
 }
 
 export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/areas': typeof AreasRouteWithChildren
-  '/areas/$area': typeof AreasAreaRoute
+  __root__: typeof rootRoute;
+  "/": typeof IndexRoute;
+  "/about": typeof AboutRoute;
+  "/areas": typeof AreasRouteWithChildren;
+  "/areas/$area": typeof AreasAreaRoute;
 }
 
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/areas' | '/areas/$area'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/areas' | '/areas/$area'
-  id: '__root__' | '/' | '/about' | '/areas' | '/areas/$area'
-  fileRoutesById: FileRoutesById
+  fileRoutesByFullPath: FileRoutesByFullPath;
+  fullPaths: "/" | "/about" | "/areas" | "/areas/$area";
+  fileRoutesByTo: FileRoutesByTo;
+  to: "/" | "/about" | "/areas" | "/areas/$area";
+  id: "__root__" | "/" | "/about" | "/areas" | "/areas/$area";
+  fileRoutesById: FileRoutesById;
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
-  AreasRoute: typeof AreasRouteWithChildren
+  IndexRoute: typeof IndexRoute;
+  AboutRoute: typeof AboutRoute;
+  AreasRoute: typeof AreasRouteWithChildren;
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AreasRoute: AreasRouteWithChildren,
-}
+};
 
 export const routeTree = rootRoute
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
 /* ROUTE_MANIFEST_START
 {

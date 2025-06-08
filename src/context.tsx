@@ -1,7 +1,7 @@
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient } from "@tanstack/react-query";
 
 export const context = {
-    queryClient: new QueryClient(),
-}
+  queryClient: new QueryClient(),
+};
 
-export type Context = typeof context
+export type Context = typeof context;
