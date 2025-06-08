@@ -1,6 +1,17 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import initSqlJs, { Database } from "sql.js";
-import { Component, ComponentType, Dispatch, FC, SetStateAction, useMemo, useState } from "react";
+// @ts-ignore
+import wasm from "sql.js/dist/sql-wasm.wasm?url";
+import {
+  createContext,
+  Dispatch,
+  FC,
+  PropsWithChildren,
+  SetStateAction,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 import {
   Alert,
   Table,
@@ -12,7 +23,7 @@ import {
   TextareaAutosize,
 } from "@mui/material";
 
-const SQL = await initSqlJs();
+const SQL = await initSqlJs({ locateFile: () => wasm });
 
 export const getDatabase = (url: string) =>
   queryOptions({
@@ -28,14 +39,6 @@ type QueryExecResult = {
   columns: string[];
   values: SqlValue[][];
 };
-type Input = ComponentType<{
-  sql: string;
-  setSql: Dispatch<SetStateAction<string>>;
-}>;
-
-const BasicInput: Input = ({ sql, setSql }) => (
-  <TextareaAutosize value={sql} onChange={(e) => setSql(e.currentTarget.value)} />
-);
 
 const ResultTable: FC<{ result: QueryExecResult }> = ({ result: { columns, values } }) => {
   return (
@@ -62,25 +65,41 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({ result: { columns, value
   );
 };
 
-export const SQLViewer: FC<{
-  url: string;
-  Component?: Input;
-}> = ({ url, Component = BasicInput }) => {
-  const db = useSuspenseQuery(getDatabase(url)).data;
-  const [sql, setSql] = useState("SELECT * FROM relations");
+const BasicInput: FC = () => {
+  const { sql, setSql } = useContext(SQLContext);
+  return <TextareaAutosize value={sql} onChange={(e) => setSql(e.currentTarget.value)} />;
+};
+
+export const SQLContext = createContext<{
+  sql: string;
+  setSql: Dispatch<SetStateAction<string>>;
+}>(null as any);
+
+export const SQLViewer: FC<
+  PropsWithChildren<{
+    url: string;
+  }>
+> = ({ url, children = <BasicInput /> }) => {
+  const query = useSuspenseQuery(getDatabase(url));
+  const [sql, setSql] = useState("select sqlite_version()");
   const [res, err] = useMemo(() => {
+    if (query.error) {
+      return [undefined, query.error];
+    } else if (!query.data) {
+      return [];
+    }
     try {
-      return [db.exec(sql)];
+      return [query.data.exec(sql)];
     } catch (e) {
       return [undefined, e];
     }
-  }, [sql]);
+  }, [query.data, sql]);
 
   return (
-    <>
-      <Component sql={sql} setSql={setSql} />
-      {err && <Alert severity="error">{String(err)}</Alert>}
+    <SQLContext value={{ sql, setSql }}>
+      {children}
+      {err ? <Alert severity="error">{String(err)}</Alert> : null}
       {res?.map((r, i) => <ResultTable key={i} result={r} />)}
-    </>
+    </SQLContext>
   );
 };
