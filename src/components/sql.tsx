@@ -144,7 +144,7 @@ export const SQLViewer: FC<
   }>
 > = ({ url, children = <BasicInput /> }) => {
   const query = useSuspenseQuery(getDatabase(url));
-  const [sql, setSql] = useState("SELECT * FROM \"English_search\"('search for anything')");
+  const [sql, setSql] = useState("SELECT * FROM \"English\"('search for anything')");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10); // Default to 10 rows per page
 
