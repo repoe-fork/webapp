@@ -16,7 +16,7 @@
     "@types/react-dom": "^19.1.5",
     "@types/sql.js": "^1.4.9",
     "@vitejs/plugin-react": "^4.6.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.6.2",
     "vite": "^6.3.5",
     "vite-tsconfig-paths": "^5.1.4"
   },
