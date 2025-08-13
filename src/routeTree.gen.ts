@@ -8,90 +8,115 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as AreasRouteImport } from './routes/areas'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as SqlSequelRouteImport } from './routes/sql.$sequel'
+import { Route as AreasAreaRouteImport } from './routes/areas.$area'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as AreasImport } from './routes/areas'
-import { Route as AboutImport } from './routes/about'
-import { Route as IndexImport } from './routes/index'
-import { Route as SqlSequelImport } from './routes/sql.$sequel'
-import { Route as AreasAreaImport } from './routes/areas.$area'
-
-// Create/Update Routes
-
-const AreasRoute = AreasImport.update({
+const AreasRoute = AreasRouteImport.update({
   id: '/areas',
   path: '/areas',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AboutRoute = AboutImport.update({
+const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const IndexRoute = IndexImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const SqlSequelRoute = SqlSequelImport.update({
+const SqlSequelRoute = SqlSequelRouteImport.update({
   id: '/sql/$sequel',
   path: '/sql/$sequel',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const AreasAreaRoute = AreasAreaImport.update({
+const AreasAreaRoute = AreasAreaRouteImport.update({
   id: '/$area',
   path: '/$area',
   getParentRoute: () => AreasRoute,
 } as any)
 
-// Populate the FileRoutesByPath interface
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/areas': typeof AreasRouteWithChildren
+  '/areas/$area': typeof AreasAreaRoute
+  '/sql/$sequel': typeof SqlSequelRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/areas': typeof AreasRouteWithChildren
+  '/areas/$area': typeof AreasAreaRoute
+  '/sql/$sequel': typeof SqlSequelRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/areas': typeof AreasRouteWithChildren
+  '/areas/$area': typeof AreasAreaRoute
+  '/sql/$sequel': typeof SqlSequelRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/about' | '/areas' | '/areas/$area' | '/sql/$sequel'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/about' | '/areas' | '/areas/$area' | '/sql/$sequel'
+  id: '__root__' | '/' | '/about' | '/areas' | '/areas/$area' | '/sql/$sequel'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  AreasRoute: typeof AreasRouteWithChildren
+  SqlSequelRoute: typeof SqlSequelRoute
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
+    '/areas': {
+      id: '/areas'
+      path: '/areas'
+      fullPath: '/areas'
+      preLoaderRoute: typeof AreasRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/about': {
       id: '/about'
       path: '/about'
       fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/areas': {
-      id: '/areas'
-      path: '/areas'
-      fullPath: '/areas'
-      preLoaderRoute: typeof AreasImport
-      parentRoute: typeof rootRoute
-    }
-    '/areas/$area': {
-      id: '/areas/$area'
-      path: '/$area'
-      fullPath: '/areas/$area'
-      preLoaderRoute: typeof AreasAreaImport
-      parentRoute: typeof AreasImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/sql/$sequel': {
       id: '/sql/$sequel'
       path: '/sql/$sequel'
       fullPath: '/sql/$sequel'
-      preLoaderRoute: typeof SqlSequelImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof SqlSequelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/areas/$area': {
+      id: '/areas/$area'
+      path: '/$area'
+      fullPath: '/areas/$area'
+      preLoaderRoute: typeof AreasAreaRouteImport
+      parentRoute: typeof AreasRoute
     }
   }
 }
-
-// Create and export the route tree
 
 interface AreasRouteChildren {
   AreasAreaRoute: typeof AreasAreaRoute
@@ -103,89 +128,12 @@ const AreasRouteChildren: AreasRouteChildren = {
 
 const AreasRouteWithChildren = AreasRoute._addFileChildren(AreasRouteChildren)
 
-export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/areas': typeof AreasRouteWithChildren
-  '/areas/$area': typeof AreasAreaRoute
-  '/sql/$sequel': typeof SqlSequelRoute
-}
-
-export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/areas': typeof AreasRouteWithChildren
-  '/areas/$area': typeof AreasAreaRoute
-  '/sql/$sequel': typeof SqlSequelRoute
-}
-
-export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/areas': typeof AreasRouteWithChildren
-  '/areas/$area': typeof AreasAreaRoute
-  '/sql/$sequel': typeof SqlSequelRoute
-}
-
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/areas' | '/areas/$area' | '/sql/$sequel'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/areas' | '/areas/$area' | '/sql/$sequel'
-  id: '__root__' | '/' | '/about' | '/areas' | '/areas/$area' | '/sql/$sequel'
-  fileRoutesById: FileRoutesById
-}
-
-export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
-  AreasRoute: typeof AreasRouteWithChildren
-  SqlSequelRoute: typeof SqlSequelRoute
-}
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AreasRoute: AreasRouteWithChildren,
   SqlSequelRoute: SqlSequelRoute,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-/* ROUTE_MANIFEST_START
-{
-  "routes": {
-    "__root__": {
-      "filePath": "__root.tsx",
-      "children": [
-        "/",
-        "/about",
-        "/areas",
-        "/sql/$sequel"
-      ]
-    },
-    "/": {
-      "filePath": "index.tsx"
-    },
-    "/about": {
-      "filePath": "about.tsx"
-    },
-    "/areas": {
-      "filePath": "areas.tsx",
-      "children": [
-        "/areas/$area"
-      ]
-    },
-    "/areas/$area": {
-      "filePath": "areas.$area.tsx",
-      "parent": "/areas"
-    },
-    "/sql/$sequel": {
-      "filePath": "sql.$sequel.tsx"
-    }
-  }
-}
-ROUTE_MANIFEST_END */
