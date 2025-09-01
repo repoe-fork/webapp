@@ -28,7 +28,7 @@ jobs:
           npm ci
           npm run build
       - name: upload pages
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: dist
       - name: deploy pages
