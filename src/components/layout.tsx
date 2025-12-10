@@ -4,6 +4,7 @@ import "color-legend-element";
 // @ts-ignore
 import palette from "google-palette";
 import { Topology } from "types/world_areas";
+import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 
 export const getLayout = (filename: string) =>
   queryOptions({
@@ -18,6 +19,10 @@ export interface Edge {
   path: [number, number][];
   color?: string;
   edge_type: string;
+}
+
+function roomKey(room: string, strings?: string[]) {
+  return strings?.length ? `${room} "${strings.join('" "')}"` : room;
 }
 
 const Edge: React.FC<{ graph: any; scale: number } & Edge> = ({
@@ -51,28 +56,10 @@ const Edge: React.FC<{ graph: any; scale: number } & Edge> = ({
   );
 };
 
-export const LayoutComponent: React.FC<{ layout: Topology }> = ({ layout }) => {
-  const graph = useSuspenseQuery(getLayout(layout.file)).data;
-
+const Graph: React.FC<{ file: string }> = ({ file }) => {
+  const graph = useSuspenseQuery(getLayout(file)).data;
   const [viewBox, scale, colorMap] = useMemo(() => {
-    const names = new Set<string>();
-    const min = [Infinity, Infinity],
-      max = [-Infinity, -Infinity];
-    for (let { x, y, room } of graph.nodes || []) {
-      names.add(room);
-      min[0] = Math.min(min[0], x);
-      min[1] = Math.min(min[1], y);
-      max[0] = Math.max(max[0], x);
-      max[1] = Math.max(max[1], y);
-    }
-    if (min[0] === max[0]) min[0] = 0;
-    if (min[1] === max[1]) min[1] = 0;
-    const colors: string[] = [...palette("mpn65", names.size)];
-    return [
-      `0 0 ${max[0] + min[0]} ${max[1] + min[1]}`,
-      (max[0] - min[0]) / 200,
-      Object.fromEntries([...names].map((n, i) => [n, "#" + colors[i]])),
-    ];
+    return processGraph(graph.nodes);
   }, [graph.nodes]);
 
   if (!graph.nodes?.length) {
@@ -80,28 +67,94 @@ export const LayoutComponent: React.FC<{ layout: Topology }> = ({ layout }) => {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "row" }}>
-      <div style={{ maxWidth: "500px", margin: "5px" }}>
-        <svg viewBox={viewBox} style={{ width: "100%", backgroundColor: "#222" }}>
-          {graph.edges.map((edge: Edge) => {
-            return <Edge {...edge} graph={graph} scale={scale} key={`${edge.from}-${edge.to}`} />;
-          })}
-          {graph.nodes.map(({ x, y, room }: any) => (
-            <circle cx={x} cy={y} r={(room ? 4 : 3) * scale} fill={colorMap[room]}>
-              <title>{room || ""}</title>
-            </circle>
+    <div>
+      <div style={{ display: "flex", flexDirection: "row" }}>
+        <div style={{ maxWidth: "500px", margin: "5px" }}>
+          <svg viewBox={viewBox} style={{ width: "100%", backgroundColor: "#222" }}>
+            {graph.edges.map((edge: Edge) => {
+              return <Edge {...edge} graph={graph} scale={scale} key={`${edge.from}-${edge.to}`} />;
+            })}
+            {graph.nodes.map(({ x, y, room, strings }: any, i: number) => (
+              <circle
+                key={i}
+                cx={x}
+                cy={y}
+                r={(room ? 4 : 3) * scale}
+                fill={colorMap[roomKey(room, strings)].color}>
+                <title>
+                  {room || ""}
+                  {strings?.length ? '\n"' + strings.join('"\n"') + '"' : ""}
+                </title>
+              </circle>
+            ))}
+          </svg>
+        </div>
+        <div style={{ maxWidth: "50%" }}>
+          {/* @ts-ignore */}
+          <color-legend
+            titleText={file}
+            scaleType="categorical"
+            domain={Object.keys(colorMap).map((k) => k || "<unknown>")}
+            range={Object.values(colorMap).map(({ color }) => color)}
+          />
+          <Accordion>
+            <AccordionSummary>graph</AccordionSummary>
+            <AccordionDetails>
+              <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(graph, undefined, 2)}</pre>
+            </AccordionDetails>
+          </Accordion>
+        </div>
+      </div>
+      {graph.subgraphs && (
+        <div>
+          <h3>Subgraphs</h3>
+          {Object.entries(graph.subgraphs).map(([k, v]) => (
+            <div>
+              <h4>{k}</h4>
+              {(v as any[]).map((f) => (
+                <Graph key={f} file={f} />
+              ))}
+            </div>
           ))}
-        </svg>
-      </div>
-      <div>
-        {/* @ts-ignore */}
-        <color-legend
-          titleText={layout.file}
-          scaleType="categorical"
-          domain={Object.keys(colorMap).map((k) => k || "<unknown>")}
-          range={Object.values(colorMap)}
-        />
-      </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+function processGraph(nodes: any[]) {
+  const names: Record<string, string[]> = {};
+  const min = [Infinity, Infinity],
+    max = [-Infinity, -Infinity];
+  for (let { x, y, room, strings } of nodes || []) {
+    names[roomKey(room, strings)] = strings;
+    min[0] = Math.min(min[0], x);
+    min[1] = Math.min(min[1], y);
+    max[0] = Math.max(max[0], x);
+    max[1] = Math.max(max[1], y);
+  }
+  if (min[0] === max[0]) min[0] = 0;
+  if (min[1] === max[1]) min[1] = 0;
+  const colors: string[] = [...palette("mpn65", Object.keys(names).length)];
+  return [
+    `0 0 ${max[0] + min[0]} ${max[1] + min[1]}`,
+    (max[0] - min[0]) / 200,
+    Object.fromEntries(
+      Object.entries(names).map(([key, strings], i) => [key, { color: "#" + colors[i], strings }]),
+    ),
+  ] as const;
+}
+
+export const LayoutComponent: React.FC<{ layout: Topology }> = ({ layout }) => {
+  return (
+    <div>
+      <Accordion>
+        <AccordionSummary>{layout.file}</AccordionSummary>
+        <AccordionDetails>
+          <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(layout, undefined, 2)}</pre>
+        </AccordionDetails>
+      </Accordion>
+      <Graph file={layout.file} />
     </div>
   );
 };
