@@ -1,5 +1,5 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "color-legend-element";
 // @ts-ignore
 import palette from "google-palette";
@@ -56,11 +56,16 @@ const Edge: React.FC<{ graph: any; scale: number } & Edge> = ({
   );
 };
 
-const Graph: React.FC<{ file: string }> = ({ file }) => {
+const Graph: React.FC<{
+  file: string;
+  addNodes: (names: Record<string, string[]>) => void;
+  colorMap: Record<string, { color: string; strings: string[] }>;
+}> = ({ file, colorMap, addNodes }) => {
   const graph = useSuspenseQuery(getLayout(file)).data;
-  const [viewBox, scale, colorMap] = useMemo(() => {
+  const [viewBox, scale, names] = useMemo(() => {
     return processGraph(graph.nodes);
   }, [graph.nodes]);
+  useEffect(() => void addNodes(names), [names]);
 
   if (!graph.nodes?.length) {
     return <>No data</>;
@@ -112,7 +117,7 @@ const Graph: React.FC<{ file: string }> = ({ file }) => {
             <div>
               <h4>{k}</h4>
               {(v as any[]).map((f) => (
-                <Graph key={f} file={f} />
+                <Graph key={f} file={f} addNodes={addNodes} colorMap={colorMap} />
               ))}
             </div>
           ))}
@@ -135,17 +140,19 @@ function processGraph(nodes: any[]) {
   }
   if (min[0] === max[0]) min[0] = 0;
   if (min[1] === max[1]) min[1] = 0;
-  const colors: string[] = [...palette("mpn65", Object.keys(names).length)];
-  return [
-    `0 0 ${max[0] + min[0]} ${max[1] + min[1]}`,
-    (max[0] - min[0]) / 200,
-    Object.fromEntries(
-      Object.entries(names).map(([key, strings], i) => [key, { color: "#" + colors[i], strings }]),
-    ),
-  ] as const;
+  return [`0 0 ${max[0] + min[0]} ${max[1] + min[1]}`, (max[0] - min[0]) / 200, names] as const;
 }
 
 export const LayoutComponent: React.FC<{ layout: Topology }> = ({ layout }) => {
+  const [nodes, setNodes] = useState<Record<string, string[]>>({});
+
+  const colorMap = useMemo(() => {
+    const colors: string[] = [...palette("mpn65", Object.keys(nodes).length)];
+    return Object.fromEntries(
+      Object.entries(nodes).map(([key, strings], i) => [key, { color: "#" + colors[i], strings }]),
+    );
+  }, [nodes]);
+
   return (
     <div>
       <Accordion>
@@ -154,7 +161,11 @@ export const LayoutComponent: React.FC<{ layout: Topology }> = ({ layout }) => {
           <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(layout, undefined, 2)}</pre>
         </AccordionDetails>
       </Accordion>
-      <Graph file={layout.file} />
+      <Graph
+        file={layout.file}
+        colorMap={colorMap}
+        addNodes={(added) => setNodes({ ...nodes, ...added })}
+      />
     </div>
   );
 };
