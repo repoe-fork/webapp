@@ -1,8 +1,6 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import "color-legend-element";
-// @ts-ignore
-import palette from "google-palette";
 import { Topology } from "types/world_areas";
 import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 
@@ -66,6 +64,15 @@ const Graph: React.FC<{
     return processGraph(graph.nodes);
   }, [graph.nodes]);
   useEffect(() => void addNodes(names), [names]);
+  const [domain, range] = useMemo(() => {
+    const domain = [],
+      range = [];
+    for (const name of Object.keys(names)) {
+      domain.push(name || "<unknown>");
+      range.push(colorMap[name]?.color || "gray");
+    }
+    return [domain, range];
+  }, [names, colorMap]);
 
   if (!graph.nodes?.length) {
     return <>No data</>;
@@ -85,7 +92,7 @@ const Graph: React.FC<{
                 cx={x}
                 cy={y}
                 r={(room ? 4 : 3) * scale}
-                fill={colorMap[roomKey(room, strings)].color}>
+                fill={colorMap[roomKey(room, strings)]?.color || "gray"}>
                 <title>
                   {room || ""}
                   {strings?.length ? '\n"' + strings.join('"\n"') + '"' : ""}
@@ -96,12 +103,7 @@ const Graph: React.FC<{
         </div>
         <div style={{ maxWidth: "50%" }}>
           {/* @ts-ignore */}
-          <color-legend
-            titleText={file}
-            scaleType="categorical"
-            domain={Object.keys(colorMap).map((k) => k || "<unknown>")}
-            range={Object.values(colorMap).map(({ color }) => color)}
-          />
+          <color-legend titleText={file} scaleType="categorical" domain={domain} range={range} />
           <Accordion>
             <AccordionSummary>graph</AccordionSummary>
             <AccordionDetails>
@@ -143,16 +145,11 @@ function processGraph(nodes: any[]) {
   return [`0 0 ${max[0] + min[0]} ${max[1] + min[1]}`, (max[0] - min[0]) / 200, names] as const;
 }
 
-export const LayoutComponent: React.FC<{ layout: Topology }> = ({ layout }) => {
-  const [nodes, setNodes] = useState<Record<string, string[]>>({});
-
-  const colorMap = useMemo(() => {
-    const colors: string[] = [...palette("mpn65", Object.keys(nodes).length)];
-    return Object.fromEntries(
-      Object.entries(nodes).map(([key, strings], i) => [key, { color: "#" + colors[i], strings }]),
-    );
-  }, [nodes]);
-
+export const LayoutComponent: React.FC<{
+  layout: Topology;
+  addNodes: (added: Record<string, string[]>) => void;
+  colorMap: Record<string, { color: string; strings: string[] }>;
+}> = ({ layout, colorMap, addNodes }) => {
   return (
     <div>
       <Accordion>
@@ -161,11 +158,7 @@ export const LayoutComponent: React.FC<{ layout: Topology }> = ({ layout }) => {
           <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(layout, undefined, 2)}</pre>
         </AccordionDetails>
       </Accordion>
-      <Graph
-        file={layout.file}
-        colorMap={colorMap}
-        addNodes={(added) => setNodes({ ...nodes, ...added })}
-      />
+      <Graph file={layout.file} colorMap={colorMap} addNodes={addNodes} />
     </div>
   );
 };
