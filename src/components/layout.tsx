@@ -1,8 +1,9 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "color-legend-element";
 import { Topology } from "types/world_areas";
 import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
+import Papa from "papaparse";
 
 export const getLayout = (filename: string) =>
   queryOptions({
@@ -19,8 +20,13 @@ export interface Edge {
   edge_type: string;
 }
 
-function roomKey(room: string, strings?: string[]) {
-  return strings?.length ? `${room} "${strings.join('" "')}"` : room;
+function roomKey(room: string, strings: string[] = []) {
+  return Papa.unparse([[room, ...strings]], { delimiter: " / ", header: false });
+}
+
+function parseRoomKey(key: string) {
+  if (key === UNTAGGED_NODE) return undefined;
+  return Papa.parse(key, { delimiter: " / ", header: false }).data[0] as string[];
 }
 
 const Edge: React.FC<{ graph: any; scale: number } & Edge> = ({
@@ -54,12 +60,14 @@ const Edge: React.FC<{ graph: any; scale: number } & Edge> = ({
   );
 };
 
+const UNTAGGED_NODE = "<unknown>";
 const Graph: React.FC<{
   file: string;
   addNodes: (names: Record<string, string[]>) => void;
   colorMap: Record<string, { color: string; strings: string[] }>;
 }> = ({ file, colorMap, addNodes }) => {
   const graph = useSuspenseQuery(getLayout(file)).data;
+  const [room, setRoom] = useState<string[]>();
   const [viewBox, scale, names] = useMemo(() => {
     return processGraph(graph.nodes);
   }, [graph.nodes]);
@@ -68,7 +76,7 @@ const Graph: React.FC<{
     const domain = [],
       range = [];
     for (const name of Object.keys(names)) {
-      domain.push(name || "<unknown>");
+      domain.push(name || UNTAGGED_NODE);
       range.push(colorMap[name]?.color || "gray");
     }
     return [domain, range];
@@ -103,7 +111,20 @@ const Graph: React.FC<{
         </div>
         <div style={{ maxWidth: "50%" }}>
           {/* @ts-ignore */}
-          <color-legend titleText={file} scaleType="categorical" domain={domain} range={range} />
+          <color-legend
+            titleText={file}
+            scaleType="categorical"
+            domain={domain}
+            range={range}
+            onClick={(e: React.MouseEvent) => {
+              const li = e.nativeEvent
+                .composedPath()
+                .find((el) => (el as HTMLElement).tagName === "LI");
+              if (li) {
+                setRoom(parseRoomKey((li as HTMLElement).textContent.trim()));
+              }
+            }}
+          />
           <Accordion>
             <AccordionSummary>graph</AccordionSummary>
             <AccordionDetails>
@@ -140,8 +161,14 @@ function processGraph(nodes: any[]) {
     max[0] = Math.max(max[0], x);
     max[1] = Math.max(max[1], y);
   }
-  if (min[0] === max[0]) min[0] = 0;
-  if (min[1] === max[1]) min[1] = 0;
+  if (min[0] === max[0]) {
+    min[0] = 0;
+    max[0] = max[0] * 2;
+  }
+  if (min[1] === max[1]) {
+    min[1] = 0;
+    max[1] = max[1] * 2;
+  }
   return [`0 0 ${max[0] + min[0]} ${max[1] + min[1]}`, (max[0] - min[0]) / 200, names] as const;
 }
 
