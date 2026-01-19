@@ -2,8 +2,9 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import React, { useEffect, useMemo, useState } from "react";
 import "color-legend-element";
 import { Topology } from "types/world_areas";
-import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
 import Papa from "papaparse";
+import { parseARM, ARMFile, ARMCell } from "../lib/arm";
 
 export const getLayout = (filename: string) =>
   queryOptions({
@@ -11,6 +12,92 @@ export const getLayout = (filename: string) =>
     queryFn: () =>
       fetch(`https://repoe-fork.github.io/poe2/${filename}.json`).then((r) => r.json()),
   });
+
+export const getRoom = (path: string) =>
+  queryOptions({
+    queryKey: ["room", { path }],
+    queryFn: () =>
+      fetch(`https://ggpk.exposed/poe2/${path.toLowerCase()}`)
+        .then((r) => {
+          if (!r.ok) throw new Error(`Failed to fetch room: ${r.statusText}`);
+          return r.text();
+        })
+        .then(parseARM),
+  });
+
+const RoomSVG: React.FC<{ roomPath: string }> = ({ roomPath }) => {
+  const { data: arm, error } = useSuspenseQuery(getRoom(roomPath));
+
+  if (error) return <Typography color="error">Error loading room</Typography>;
+  if (!arm) return null;
+
+  const cellSize = 10;
+  const width = arm.root_slot.width * cellSize;
+  const height = arm.root_slot.height * cellSize;
+
+  return (
+    <div style={{ padding: "8px", backgroundColor: "#333", borderRadius: "4px" }}>
+      <Typography variant="caption" sx={{ color: "#ccc", display: "block", mb: 0.5 }}>
+        {roomPath.split("/").pop()} ({arm.root_slot.width}x{arm.root_slot.height})
+      </Typography>
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        style={{ width: "100%", maxWidth: width * 2, display: "block" }}>
+        {arm.grid.map((row, y) =>
+          row.map((cell, x) => {
+            let fill = "none";
+            let stroke = "#444";
+            let opacity = 1;
+
+            switch (cell.tag) {
+              case "k":
+                fill = "#556";
+                stroke = "#778";
+                break;
+              case "f":
+                fill = "#445";
+                stroke = "#556";
+                break;
+              case "s":
+                fill = "#222";
+                break;
+              case "o":
+                fill = "none";
+                opacity = 0.2;
+                break;
+              case "n":
+                fill = "none";
+                opacity = 0;
+                break;
+            }
+
+            return (
+              <rect
+                key={`${x}-${y}`}
+                x={x * cellSize}
+                y={y * cellSize}
+                width={cellSize}
+                height={cellSize}
+                fill={fill}
+                stroke={stroke}
+                strokeWidth={0.5}
+                opacity={opacity}>
+                <title>
+                  {cell.tag.toUpperCase()}
+                  {cell.tag === "k" &&
+                    `\nTag: ${cell.tag}\nEdges: ${Object.entries(cell.edges)
+                      .map(([k, v]) => `${k}:${v.edge}`)
+                      .join(", ")}`}
+                  {cell.tag === "f" && `\nFill: ${cell.fill}`}
+                </title>
+              </rect>
+            );
+          }),
+        )}
+      </svg>
+    </div>
+  );
+};
 
 export interface Edge {
   from: string;
@@ -67,7 +154,7 @@ const Graph: React.FC<{
   colorMap: Record<string, { color: string; strings: string[] }>;
 }> = ({ file, colorMap, addNodes }) => {
   const graph = useSuspenseQuery(getLayout(file)).data;
-  const [room, setRoom] = useState<string[]>();
+  const [roomTags, setRoomTags] = useState<string[]>();
   const [viewBox, scale, names] = useMemo(() => {
     return processGraph(graph.nodes);
   }, [graph.nodes]);
@@ -81,6 +168,11 @@ const Graph: React.FC<{
     }
     return [domain, range];
   }, [names, colorMap]);
+  const rooms = useMemo(
+    () => graph.room_set.filter((r: any) => roomTags?.includes(r.room_tag)),
+    [roomTags, graph],
+  );
+  console.log(rooms, roomTags, graph.room_set);
 
   if (!graph.nodes?.length) {
     return <>No data</>;
@@ -100,7 +192,9 @@ const Graph: React.FC<{
                 cx={x}
                 cy={y}
                 r={(room ? 4 : 3) * scale}
-                fill={colorMap[roomKey(room, strings)]?.color || "gray"}>
+                fill={colorMap[roomKey(room, strings)]?.color || "gray"}
+                onClick={() => setRoomTags([room, ...(strings || [])])}
+                style={{ cursor: room ? "pointer" : "default" }}>
                 <title>
                   {room || ""}
                   {strings?.length ? '\n"' + strings.join('"\n"') + '"' : ""}
@@ -108,6 +202,11 @@ const Graph: React.FC<{
               </circle>
             ))}
           </svg>
+          {rooms?.map((room: any) => (
+            <React.Suspense fallback={<Typography>Loading room...</Typography>}>
+              <RoomSVG key={room.file} roomPath={room.file} />
+            </React.Suspense>
+          ))}
         </div>
         <div style={{ maxWidth: "50%" }}>
           {/* @ts-ignore */}
@@ -121,7 +220,7 @@ const Graph: React.FC<{
                 .composedPath()
                 .find((el) => (el as HTMLElement).tagName === "LI");
               if (li) {
-                setRoom(parseRoomKey((li as HTMLElement).textContent.trim()));
+                setRoomTags(parseRoomKey((li as HTMLElement).textContent.trim()));
               }
             }}
           />
