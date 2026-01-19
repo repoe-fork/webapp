@@ -1,0 +1,63 @@
+version 36
+7
+"Metadata/Terrain/black_inside_wall.gt"
+"Metadata/Terrain/Desert/CavePath/cavern_thickwall.et"
+"Metadata/Terrain/Desert/CavePath/cavern_abyss_wall.et"
+"Metadata/Terrain/Desert/CavePath/cavern_abyss.gt"
+"Metadata/Terrain/Desert/CavePath/cavern_abyss_edge.et"
+"forcedblank"
+"Metadata/Terrain/Gallows/Act2/2_10_1/Rooms/cavern_room_thickwall.et"
+9 0
+1 1
+""
+0 1
+k 9 9 7 0 0 7 27 27 27 27 27 27 27 27 1 0 0 0 0 0 0 0 0 0
+7 0 0 1 0
+0 0 0
+0 0 0
+7 0 0 0 0
+146 18 0 ""
+192 80 0 ""
+125 94 0 ""
+176 154 0 ""
+103 181 0 ""
+103 150 0 ""
+24 173 0 ""
+16 128 0 ""
+-1
+76 20 0.854181 ""
+19 74 4.52688 ""
+-1
+-1
+-1
+-1
+-1
+""
+k 1 1 2 2 2 2 1 3 1 3 1 3 1 3 1 0 1 0 0 0 0 0 0 0 k 1 1 0 2 0 2 3 3 1 3 3 3 1 3 0 0 1 1 0 0 0 0 0 0 k 1 1 0 0 2 2 3 3 3 3 1 3 1 3 0 0 0 1 0 0 0 0 0 0 s s s s s s
+k 1 1 2 0 2 0 1 3 3 3 1 3 3 3 0 1 1 0 0 0 0 0 0 0 k 1 1 0 0 0 0 3 3 3 3 3 3 3 3 1 1 1 1 0 0 0 0 0 0 k 1 1 2 0 2 0 1 3 3 3 1 3 3 3 1 0 0 1 0 0 0 0 0 0 f 6 f 6 s s s s
+k 1 1 2 2 0 0 1 3 1 3 3 3 3 3 0 1 0 0 0 0 0 0 0 0 k 1 1 0 3 5 2 3 3 1 3 1 3 1 3 1 1 4 0 0 0 0 0 0 0 k 1 1 2 0 5 3 1 3 3 3 1 3 1 3 1 0 0 4 0 0 0 0 0 0 f 6 f 6 s s s s
+s k 1 1 5 5 0 0 1 3 1 3 3 3 3 3 0 4 0 0 0 0 0 0 0 0 k 1 1 5 0 0 5 1 3 3 3 3 3 1 3 4 0 0 0 0 0 0 0 0 0 f 6 f 6 s s s s
+s f 6 f 6 f 6 f 6 s s s s
+s s s s s s s s s
+s s s s s s s s s
+s s s s s s s s s
+s s s s s s s s s
+36 95 0 -2.30345 0 0 -0.913468 0.406911 1 0 0 1 "Metadata/Terrain/Doodads/Desert/Foundry/ScrapParts03.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+99 46 0 1.71623 0 0 0.75661 0.653866 0 0 0 0.9 "Metadata/Terrain/Doodads/Desert/Tents/foundry_farudinTent_05.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+95 57 0 -0.0797083 0 0 -0.0398436 0.999206 0 0 0 1 "Metadata/Terrain/Doodads/Desert/Oasis/DamagedRug_set.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+91 55 0 -1.5219 0 0 -0.689608 0.724183 1 0 1 -5 1 "Metadata/Terrain/Doodads/Desert/QuarryProps/Quarry_FarudinFoldedCloth02.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+59 62 0 2.36107 0 0 0.924809 0.380432 0 0 0 1 "Metadata/Terrain/Doodads/Desert/Tents/HangingSnakeDissected_SqrL_2.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+92 44 0 -0.017619 0 0 -0.00880938 0.999961 0 0 0 1 "Metadata/Terrain/Doodads/Desert/Oasis/DamagedRug_set.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+66 60 0 0.192545 0 0 0.0961241 0.995369 0 0 0 1 "Metadata/Terrain/Doodads/Desert/Tents/HangingSnakeDissected_SqrL_1.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+83 71 0 -1.01438 0 0 -0.485724 0.874112 0 0 0 1 "Metadata/Terrain/Doodads/Desert/QuarryProps/Quarry_FadudinRopes01.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+44 107 0 0.189474 0 0 0.0945954 0.995516 1 0 0 1 "Metadata/Terrain/Doodads/Desert/Foundry/Clusters06.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+33 116 0 0.719455 0 0 0.352019 0.935993 0 0 0 1 "Metadata/Terrain/Doodads/Desert/Foundry/FloorMould08.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+34 118 0 -0.696312 0 0 -0.341165 0.940003 0 0 0 1 "Metadata/Terrain/Doodads/Desert/Foundry/FloorMould07.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+91 83 0 -1.63999 0 0 -0.731141 0.682226 0 0 0 1 "Metadata/Terrain/Doodads/Desert/Foundry/Clusters08.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+59 88 0 2.45286 0 0 0.941289 0.337602 0 0 0 1 "Metadata/Terrain/Doodads/Desert/Foundry/FloorPanels05.ao" "Metadata/MiscellaneousObjects/Doodad" 0
+-1
+-1
+-1
+0
+-1
+0

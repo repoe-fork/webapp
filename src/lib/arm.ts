@@ -136,7 +136,7 @@ export function parseARM(text: string): ARMFile {
       line = match[3];
 
       if (tag === "k") {
-        row.push({ tag: "k", ...parseSlot("k " + data) });
+        row.push({ ...parseSlot("k " + data), tag: "k" });
       } else if (tag === "f") {
         row.push({ tag: "f", fill: getString(parseInt(data)) });
       } else {
@@ -163,7 +163,7 @@ export function parseARM(text: string): ARMFile {
 
 function tokenize(line: string): any[] {
   const result: any[] = [];
-  const reToken = /(?:(-?\d+)|(-?\d*\.\d+)|"((?:[^"]|\\")*)"|(\S+))/g;
+  const reToken = /(-?\d+)|(-?\d*\.\d+)|"((?:[^"]|\\")*)"|(\S+)/g;
   let match;
   while ((match = reToken.exec(line)) !== null) {
     if (match[1] !== undefined) result.push(parseInt(match[1]));

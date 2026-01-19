@@ -172,7 +172,6 @@ const Graph: React.FC<{
     () => graph.room_set.filter((r: any) => roomTags?.includes(r.room_tag)),
     [roomTags, graph],
   );
-  console.log(rooms, roomTags, graph.room_set);
 
   if (!graph.nodes?.length) {
     return <>No data</>;
