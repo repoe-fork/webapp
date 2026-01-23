@@ -13,11 +13,11 @@ export const getLayout = (filename: string) =>
       fetch(`https://repoe-fork.github.io/poe2/${filename}.json`).then((r) => r.json()),
   });
 
-export const getRoom = (path: string) =>
+export const getRoom = (filename: string) =>
   queryOptions({
-    queryKey: ["room", { path }],
+    queryKey: ["room", { filename }],
     queryFn: () =>
-      fetch(`https://ggpk.exposed/poe2/${path.toLowerCase()}`)
+      fetch(`https://ggpk.exposed/poe2/${filename}`)
         .then((r) => {
           if (!r.ok) throw new Error(`Failed to fetch room: ${r.statusText}`);
           return r.text();
@@ -47,12 +47,25 @@ const RoomSVG: React.FC<{ roomPath: string }> = ({ roomPath }) => {
           row.map((cell, x) => {
             let fill = "none";
             let stroke = "#444";
-            let opacity = 1;
+            let opacity = 0.8;
+            let cellWidth = 1;
+            let cellHeight = 1;
+            // Y-coordinate system of svg is inverted relative to the grid
+            let yOffset = -1;
+            let xOffset = 0;
 
             switch (cell.tag) {
               case "k":
                 fill = "#556";
                 stroke = "#778";
+                cellWidth = cell.width;
+                cellHeight = cell.height;
+                if (!cell.origin?.includes("n")) {
+                  yOffset += cell.height - 1;
+                }
+                if (cell.origin?.includes("e")) {
+                  xOffset -= cell.width - 1;
+                }
                 break;
               case "f":
                 fill = "#445";
@@ -66,27 +79,27 @@ const RoomSVG: React.FC<{ roomPath: string }> = ({ roomPath }) => {
                 opacity = 0.2;
                 break;
               case "n":
-                fill = "none";
-                opacity = 0;
-                break;
+                return null;
             }
 
             return (
               <rect
                 key={`${x}-${y}`}
-                x={x * cellSize}
-                y={y * cellSize}
-                width={cellSize}
-                height={cellSize}
+                x={(x + xOffset) * cellSize}
+                y={height - (y + yOffset) * cellSize}
+                width={cellWidth * cellSize}
+                height={cellHeight * cellSize}
                 fill={fill}
                 stroke={stroke}
                 strokeWidth={0.5}
                 opacity={opacity}>
                 <title>
-                  {cell.tag.toUpperCase()}
+                  {x},{y} - {cell.tag.toUpperCase()} ({cellWidth}x{cellHeight})
                   {cell.tag === "k" &&
-                    `\nTag: ${cell.tag}\nEdges: ${Object.entries(cell.edges)
+                    ` from ${cell.origin}\nEdges: ${Object.entries(cell.edges)
                       .map(([k, v]) => `${k}:${v.edge}`)
+                      .join(", ")}\n${Object.entries(cell.corners)
+                      .map(([k, v]) => `${k}:${v.ground}`)
                       .join(", ")}`}
                   {cell.tag === "f" && `\nFill: ${cell.fill}`}
                 </title>

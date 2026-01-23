@@ -38,6 +38,7 @@ export interface ARMFile {
 }
 
 export function parseARM(text: string): ARMFile {
+  if (!text) return {} as ARMFile;
   const lines = text.split(/\r?\n/).filter((l) => l.trim() !== "");
 
   let lineIdx = 0;
