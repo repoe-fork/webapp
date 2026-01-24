@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { getAreas } from "./areas";
-import { LayoutComponent } from "components/layout";
+import { LayoutComponent } from "components/layout/layout";
 import React, { useMemo, useState } from "react";
 // @ts-ignore
 import palette from "google-palette";
