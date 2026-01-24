@@ -3,8 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import "color-legend-element";
 import { Topology } from "types/world_areas";
 import { Accordion, AccordionDetails, AccordionSummary, Typography } from "@mui/material";
-import Papa from "papaparse";
-import { parseARM, ARMFile, ARMCell } from "../lib/arm";
+import { parseARM } from "../lib/arm";
 
 export const getLayout = (filename: string) =>
   queryOptions({
@@ -24,6 +23,21 @@ export const getRoom = (filename: string) =>
         })
         .then(parseARM),
   });
+
+const Rooms: React.FC<{ tag: string; graph: any }> = ({ tag, graph }) => {
+  return (
+    <div>
+      <h3>{tag}</h3>
+      {graph.room_set
+        .filter(({ room_tag }: any) => room_tag === tag)
+        .map((room: any) => (
+          <React.Suspense fallback={<Typography>Loading room...</Typography>}>
+            <RoomSVG key={room.file} roomPath={room.file} />
+          </React.Suspense>
+        ))}
+    </div>
+  );
+};
 
 const RoomSVG: React.FC<{ roomPath: string }> = ({ roomPath }) => {
   const { data: arm, error } = useSuspenseQuery(getRoom(roomPath));
@@ -120,13 +134,17 @@ export interface Edge {
   edge_type: string;
 }
 
-function roomKey(room: string, strings: string[] = []) {
-  return Papa.unparse([[room, ...strings]], { delimiter: " / ", header: false });
+function roomKey(room: string, strings?: string[]) {
+  return strings?.length ? `${room} "${strings.join('" "')}"` : room;
 }
 
 function parseRoomKey(key: string) {
-  if (key === UNTAGGED_NODE) return undefined;
-  return Papa.parse(key, { delimiter: " / ", header: false }).data[0] as string[];
+  if (!key || key === UNTAGGED_NODE) return undefined;
+  return key
+    .split('"')[0]
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 const Edge: React.FC<{ graph: any; scale: number } & Edge> = ({
@@ -181,10 +199,6 @@ const Graph: React.FC<{
     }
     return [domain, range];
   }, [names, colorMap]);
-  const rooms = useMemo(
-    () => graph.room_set.filter((r: any) => roomTags?.includes(r.room_tag)),
-    [roomTags, graph],
-  );
 
   if (!graph.nodes?.length) {
     return <>No data</>;
@@ -214,10 +228,8 @@ const Graph: React.FC<{
               </circle>
             ))}
           </svg>
-          {rooms?.map((room: any) => (
-            <React.Suspense fallback={<Typography>Loading room...</Typography>}>
-              <RoomSVG key={room.file} roomPath={room.file} />
-            </React.Suspense>
+          {roomTags?.map((tag) => (
+            <Rooms key={tag} tag={tag} graph={graph} />
           ))}
         </div>
         <div style={{ maxWidth: "50%" }}>
