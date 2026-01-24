@@ -6,7 +6,7 @@ export const Rooms: React.FC<{ tag: string; graph: any }> = ({ tag, graph }) => 
   return (
     <div>
       <h3>{tag}</h3>
-      {graph.room_set
+      {(graph.room_set || [])
         .filter(({ room_tag }: any) => room_tag === tag)
         .map((room: any) => (
           <React.Suspense fallback={<Typography>Loading room...</Typography>}>
