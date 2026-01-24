@@ -1,7 +1,7 @@
 export interface ARMSlot {
   width: number;
   height: number;
-  tag: string | null;
+  tile_tag: string | null;
   origin: "sw" | "se" | "ne" | "nw";
   edges: Record<
     "n" | "w" | "s" | "e",
@@ -64,7 +64,7 @@ export function parseARM(text: string): ARMFile {
     return {
       width: vals[0],
       height: vals[1],
-      tag: getString(vals[22]),
+      tile_tag: getString(vals[22]),
       origin: (["sw", "se", "ne", "nw"] as const)[vals[23] || 0],
       edges: {
         n: { edge: getString(vals[2]), exit: vals[6], virtual_exit: vals[7] },
