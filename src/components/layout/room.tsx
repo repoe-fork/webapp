@@ -1,7 +1,8 @@
 import React from "react";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { Typography } from "@mui/material";
-import { ARMCell, parseARM } from "lib/arm";
+import { parseARM } from "lib/arm";
+import { Tile } from "components/layout/tile";
 
 const TRUE = true as const;
 const FALSE = false as const;
@@ -18,7 +19,7 @@ export const getRoom = (filename: string) =>
         .then(parseARM),
   });
 
-export const Room: React.FC<{ roomPath: string }> = ({ roomPath }) => {
+export const Room: React.FC<{ roomPath: string; graph: any }> = ({ roomPath, graph }) => {
   const { data: arm, error } = useSuspenseQuery(getRoom(roomPath));
 
   if (error) return <Typography color="error">Error loading room</Typography>;
@@ -96,10 +97,8 @@ export const Room: React.FC<{ roomPath: string }> = ({ roomPath }) => {
       <svg viewBox={viewBox} style={{ width: "100%", maxWidth: viewWidth * 2, display: "block" }}>
         {cells.map((row, y) =>
           row.map(
-            ({ cell, fill, stroke, opacity, cellWidth, cellHeight, xOffset, yOffset, skip }, x) => {
-              if (skip) return null;
-
-              return (
+            ({ cell, fill, stroke, opacity, cellWidth, cellHeight, xOffset, yOffset, skip }, x) =>
+              skip ? null : (
                 <rect
                   key={`${x}-${y}`}
                   x={(x + xOffset) * cellSize}
@@ -110,21 +109,16 @@ export const Room: React.FC<{ roomPath: string }> = ({ roomPath }) => {
                   stroke={stroke}
                   strokeWidth={0.5}
                   opacity={opacity}>
-                  <title>
-                    {x},{y} - {cell.tag} ({cellWidth}x{cellHeight})
-                    {cell.tag === "k" &&
-                      ` from ${cell.origin}${
-                        cell.tile_tag ? `\nTag: ${cell.tile_tag}` : ""
-                      }\nEdges: ${Object.entries(cell.edges)
-                        .map(([k, v]) => `${k}:${v.edge}`)
-                        .join(", ")}\n${Object.entries(cell.corners)
-                        .map(([k, v]: any) => `${k}:${v.ground}`)
-                        .join(", ")}`}
-                    {cell.tag === "f" && `\nFill: ${cell.fill}`}
-                  </title>
+                  {cell.tag === "k" ? (
+                    <Tile x={x} y={y} room={arm} graph={graph} cellSize={cellSize} />
+                  ) : (
+                    <title>
+                      {x},{y} - {cell.tag} ({cellWidth}x{cellHeight})
+                      {cell.tag === "f" && `\nFill: ${cell.fill}`}
+                    </title>
+                  )}
                 </rect>
-              );
-            },
+              ),
           ),
         )}
       </svg>
