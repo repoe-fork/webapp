@@ -25,7 +25,7 @@ export const Room: React.FC<{ roomPath: string; graph: any }> = ({ roomPath, gra
   if (error) return <Typography color="error">Error loading room</Typography>;
   if (!arm) return null;
 
-  const cellSize = 10;
+  const cellSize = 50;
   const width = arm.root_slot.width * cellSize;
   const height = arm.root_slot.height * cellSize;
 
@@ -99,25 +99,42 @@ export const Room: React.FC<{ roomPath: string; graph: any }> = ({ roomPath, gra
           row.map(
             ({ cell, fill, stroke, opacity, cellWidth, cellHeight, xOffset, yOffset, skip }, x) =>
               skip ? null : (
-                <rect
-                  key={`${x}-${y}`}
-                  x={(x + xOffset) * cellSize}
-                  y={height - (y + yOffset) * cellSize}
-                  width={cellWidth * cellSize}
-                  height={cellHeight * cellSize}
-                  fill={fill}
-                  stroke={stroke}
-                  strokeWidth={0.5}
-                  opacity={opacity}>
-                  {cell.tag === "k" ? (
-                    <Tile x={x} y={y} room={arm} graph={graph} cellSize={cellSize} />
-                  ) : (
+                <>
+                  <rect
+                    key={`${x}-${y}`}
+                    x={(x + xOffset) * cellSize}
+                    y={height - (y + yOffset) * cellSize}
+                    width={cellWidth * cellSize}
+                    height={cellHeight * cellSize}
+                    fill={fill}
+                    stroke={stroke}
+                    strokeWidth={0.5}
+                    opacity={opacity}>
                     <title>
-                      {x},{y} - {cell.tag} ({cellWidth}x{cellHeight})
+                      {x},{y} - {cell.tag}
+                      {cell.tag === "k" &&
+                        ` (${cellWidth}x${cellHeight}) from ${cell.origin}${
+                          cell.tile_tag ? `\nTag: ${cell.tile_tag}` : ""
+                        }\nEdges: ${Object.entries(cell.edges)
+                          .map(([k, v]) => `${k}:${v.edge}`)
+                          .join(", ")}\n${Object.entries(cell.corners)
+                          .map(([k, v]: any) => `${k}:${v.ground}`)
+                          .join(", ")}`}
                       {cell.tag === "f" && `\nFill: ${cell.fill}`}
                     </title>
+                  </rect>
+                  {cell.tag === "k" && (
+                    <Tile
+                      x={x}
+                      y={y}
+                      posX={(x + xOffset) * cellSize}
+                      posY={height - (y + yOffset) * cellSize}
+                      room={arm}
+                      graph={graph}
+                      cellSize={cellSize}
+                    />
                   )}
-                </rect>
+                </>
               ),
           ),
         )}
