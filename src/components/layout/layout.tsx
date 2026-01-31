@@ -1,6 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
 import React from "react";
-import "color-legend-element";
 import { Topology } from "types/world_areas";
 import { Graph } from "components/layout/graph";
 import { Accordion } from "components/ui/accordion";

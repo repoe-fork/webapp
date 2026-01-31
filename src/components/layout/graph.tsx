@@ -4,6 +4,7 @@ import { Edge } from "components/layout/edge";
 import { Rooms } from "components/layout/rooms";
 import { getLayout } from "components/layout/layout";
 import { Accordion } from "components/ui/accordion";
+import { ColorLegend } from "components/layout/color-legend";
 
 function roomKey(room: string, strings?: string[]) {
   return strings?.length ? `${room} "${strings.join('" "')}"` : room;
@@ -30,14 +31,11 @@ export const Graph: React.FC<{
     return processGraph(graph.nodes);
   }, [graph.nodes]);
   useEffect(() => void addNodes(names), [names]);
-  const [domain, range] = useMemo(() => {
-    const domain = [],
-      range = [];
-    for (const name of Object.keys(names)) {
-      domain.push(name || UNTAGGED_NODE);
-      range.push(colorMap[name]?.color || "gray");
-    }
-    return [domain, range];
+  const legendItems = useMemo(() => {
+    return Object.keys(names).map((name) => ({
+      label: name || UNTAGGED_NODE,
+      color: colorMap[name]?.color || "gray",
+    }));
   }, [names, colorMap]);
 
   if (!graph.nodes?.length) {
@@ -75,20 +73,10 @@ export const Graph: React.FC<{
           ))}
         </div>
         <div className="flex-1 space-y-3">
-          {/* @ts-ignore */}
-          <color-legend
-            titleText={file}
-            scaleType="categorical"
-            domain={domain}
-            range={range}
-            onClick={(e: React.MouseEvent) => {
-              const li = e.nativeEvent
-                .composedPath()
-                .find((el) => (el as HTMLElement).tagName === "LI");
-              if (li) {
-                setRoomTags(parseRoomKey((li as HTMLElement).textContent.trim()));
-              }
-            }}
+          <ColorLegend
+            title={file}
+            items={legendItems}
+            onSelect={(label) => setRoomTags(parseRoomKey(label))}
           />
           <Accordion title="graph">
             <pre className="whitespace-pre-wrap">{JSON.stringify(graph, undefined, 2)}</pre>
