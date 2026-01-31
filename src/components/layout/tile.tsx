@@ -106,7 +106,7 @@ export const Tile: React.FC<{
         }>
         <Minimap tile={match.tile} x={posX} y={posY} rotation={match.rotation} flip={match.flip} />
       </Suspense>
-      {matchedTiles.length > 1 && (
+      {matchedTiles.length > 0 && (
         <foreignObject x={posX + 6} y={posY} width={cell.width * cellSize - 12} height={18}>
           <div>
             <select

@@ -9,9 +9,13 @@
     "build": "vite build",
     "serve": "vite preview",
     "start": "vite",
-    "test": "vitest"
+    "test": "vitest",
+    "e2e": "playwright test",
+    "e2e:debug": "playwright test --headed --debug",
+    "e2e:ui": "playwright test --ui"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19.2.3",

@@ -13,6 +13,9 @@ dist/
 .vercel
 .netlify
 .wrangler
+playwright-report/
+test-results/
+.playwright-cache/
 
 # IDE
 .vscode/*
