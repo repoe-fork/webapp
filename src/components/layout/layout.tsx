@@ -2,8 +2,8 @@ import { queryOptions } from "@tanstack/react-query";
 import React from "react";
 import "color-legend-element";
 import { Topology } from "types/world_areas";
-import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import { Graph } from "components/layout/graph";
+import { Accordion } from "components/ui/accordion";
 
 export const getLayout = (filename: string) =>
   queryOptions({
@@ -19,11 +19,8 @@ export const LayoutComponent: React.FC<{
 }> = ({ layout, colorMap, addNodes }) => {
   return (
     <div>
-      <Accordion>
-        <AccordionSummary>{layout.file}</AccordionSummary>
-        <AccordionDetails>
-          <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(layout, undefined, 2)}</pre>
-        </AccordionDetails>
+      <Accordion title={layout.file}>
+        <pre className="whitespace-pre-wrap">{JSON.stringify(layout, undefined, 2)}</pre>
       </Accordion>
       <Graph file={layout.file} colorMap={colorMap} addNodes={addNodes} />
     </div>

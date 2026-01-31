@@ -1,4 +1,3 @@
-import { Drawer, List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { Area } from "types/world_areas";
 import { AreaDetails } from "./areas.$area";
@@ -11,13 +10,15 @@ export const getAreas = queryOptions({
 });
 
 const AreaLink = ({ id, name }: { id: string; name: string }) => {
-  const href = useLocationWithParams({ tab: "areas", area: id, game: null });
+  const href = useLocationWithParams({ tab: "areas", area: id });
   return (
-    <ListItem disablePadding>
-      <ListItemButton component="a" href={href}>
-        <ListItemText primary={name} />
-      </ListItemButton>
-    </ListItem>
+    <li>
+      <a
+        href={href.href()}
+        className="block rounded-md px-3 py-2 text-sm text-slate-700 hover:bg-slate-100">
+        {name}
+      </a>
+    </li>
   );
 };
 
@@ -28,15 +29,18 @@ export function AreasPage() {
   const selectedArea = selectedAreaId ? areas[selectedAreaId] : null;
 
   return (
-    <div className="p-2">
-      <Drawer variant="persistent" anchor="right" open>
-        <List>
+    <div className="flex flex-col gap-4 lg:flex-row">
+      <div className="flex-1">{selectedArea ? <AreaDetails area={selectedArea} /> : null}</div>
+      <aside className="w-full rounded-lg border border-slate-200 bg-white p-3 shadow-sm lg:w-72">
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">
+          Areas
+        </h2>
+        <ul className="max-h-[70vh] space-y-1 overflow-auto">
           {Object.values(areas).map(({ id, name }) => (
             <AreaLink key={id} id={id} name={name} />
           ))}
-        </List>
-      </Drawer>
-      {selectedArea ? <AreaDetails area={selectedArea} /> : null}
+        </ul>
+      </aside>
     </div>
   );
 }

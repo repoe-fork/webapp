@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Edge } from "components/layout/edge";
 import { Rooms } from "components/layout/rooms";
-import { Accordion, AccordionDetails, AccordionSummary } from "@mui/material";
 import { getLayout } from "components/layout/layout";
+import { Accordion } from "components/ui/accordion";
 
 function roomKey(room: string, strings?: string[]) {
   return strings?.length ? `${room} "${strings.join('" "')}"` : room;
@@ -45,10 +45,12 @@ export const Graph: React.FC<{
   }
 
   return (
-    <div>
-      <div style={{ display: "flex", flexDirection: "row" }}>
-        <div style={{ maxWidth: "500px", margin: "5px" }}>
-          <svg viewBox={viewBox} style={{ width: "100%", backgroundColor: "#222" }}>
+    <div className="space-y-4">
+      <div className="flex flex-col gap-4 lg:flex-row">
+        <div className="max-w-[500px] flex-1">
+          <svg
+            viewBox={viewBox}
+            className="w-full rounded-md border border-slate-200 bg-slate-900">
             {graph.edges.map((edge: Edge) => {
               return <Edge {...edge} graph={graph} scale={scale} key={`${edge.from}-${edge.to}`} />;
             })}
@@ -72,7 +74,7 @@ export const Graph: React.FC<{
             <Rooms key={tag} tag={tag} graph={graph} />
           ))}
         </div>
-        <div style={{ maxWidth: "50%" }}>
+        <div className="flex-1 space-y-3">
           {/* @ts-ignore */}
           <color-legend
             titleText={file}
@@ -88,20 +90,17 @@ export const Graph: React.FC<{
               }
             }}
           />
-          <Accordion>
-            <AccordionSummary>graph</AccordionSummary>
-            <AccordionDetails>
-              <pre style={{ whiteSpace: "pre-wrap" }}>{JSON.stringify(graph, undefined, 2)}</pre>
-            </AccordionDetails>
+          <Accordion title="graph">
+            <pre className="whitespace-pre-wrap">{JSON.stringify(graph, undefined, 2)}</pre>
           </Accordion>
         </div>
       </div>
       {graph.subgraphs && (
         <div>
-          <h3>Subgraphs</h3>
+          <h3 className="text-lg font-semibold text-slate-900">Subgraphs</h3>
           {Object.entries(graph.subgraphs).map(([k, v]) => (
-            <div>
-              <h4>{k}</h4>
+            <div key={k} className="mt-3 space-y-2">
+              <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{k}</h4>
               {(v as any[]).map((f) => (
                 <Graph key={f} file={f} addNodes={addNodes} colorMap={colorMap} />
               ))}

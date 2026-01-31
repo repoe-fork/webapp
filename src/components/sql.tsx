@@ -12,16 +12,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import {
-  Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextareaAutosize,
-} from "@mui/material";
+import { Alert } from "components/ui/alert";
+import { Button } from "components/ui/button";
 
 const SQL = initSqlJs({ locateFile: () => wasm });
 
@@ -42,26 +34,30 @@ type QueryExecResult = {
 
 const ResultTable: FC<{ result: QueryExecResult }> = ({ result: { columns, values } }) => {
   return (
-    <TableContainer>
-      <Table>
-        <TableHead>
-          <TableRow>
+    <div className="overflow-auto rounded-lg border border-slate-200">
+      <table className="min-w-full text-left text-sm">
+        <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-500">
+          <tr>
             {columns.map((columnName) => (
-              <TableCell key={columnName}>{columnName}</TableCell>
+              <th key={columnName} className="px-3 py-2 font-semibold">
+                {columnName}
+              </th>
             ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {values.map((row, i) => (
-            <TableRow key={columns[i]}>
-              {row.map((value, i) => (
-                <TableCell key={i}>{value}</TableCell>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-200">
+          {values.map((row, rowIndex) => (
+            <tr key={rowIndex} className="odd:bg-white even:bg-slate-50">
+              {row.map((value, cellIndex) => (
+                <td key={cellIndex} className="px-3 py-2 text-slate-700">
+                  {value}
+                </td>
               ))}
-            </TableRow>
+            </tr>
           ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+        </tbody>
+      </table>
+    </div>
   );
 };
 
@@ -74,7 +70,14 @@ const BasicInput: FC = () => {
     setPage(0); // Reset to first page when query changes
   };
 
-  return <TextareaAutosize style={{ width: "100%" }} value={sql} onChange={handleSqlChange} />;
+  return (
+    <textarea
+      className="min-h-[120px] w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm"
+      value={sql}
+      onChange={handleSqlChange}
+      rows={4}
+    />
+  );
 };
 
 export const SQLContext = createContext<{
@@ -176,20 +179,22 @@ export const SQLViewer: FC<
 
   return (
     <SQLContext value={{ sql, setSql, page, setPage, pageSize, setPageSize }}>
-      {children}
-      {err ? <Alert severity="error">{String(err)}</Alert> : null}
-      {res?.map((r, i) => <ResultTable key={i} result={r} />)}
+      <div className="space-y-4">
+        {children}
+        {err ? <Alert variant="destructive">{String(err)}</Alert> : null}
+        {res?.map((r, i) => <ResultTable key={i} result={r} />)}
+      </div>
 
       {/* Pagination controls */}
       {pageSize > 0 && (
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
-          <button onClick={handlePrevPage} disabled={page === 0}>
-            Previous Page
-          </button>
-          <span>Page {page + 1}</span>
-          <button onClick={handleNextPage} disabled={!hasMorePages}>
-            Next Page
-          </button>
+        <div className="mt-4 flex items-center justify-between">
+          <Button variant="outline" onClick={handlePrevPage} disabled={page === 0}>
+            Previous page
+          </Button>
+          <span className="text-sm text-slate-600">Page {page + 1}</span>
+          <Button variant="outline" onClick={handleNextPage} disabled={!hasMorePages}>
+            Next page
+          </Button>
         </div>
       )}
     </SQLContext>

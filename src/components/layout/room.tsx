@@ -1,6 +1,5 @@
 import React from "react";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { Typography } from "@mui/material";
 import { parseARM } from "lib/arm";
 import { Tile } from "components/layout/tile";
 
@@ -22,7 +21,7 @@ export const getRoom = (filename: string) =>
 export const Room: React.FC<{ roomPath: string; graph: any }> = ({ roomPath, graph }) => {
   const { data: arm, error } = useSuspenseQuery(getRoom(roomPath));
 
-  if (error) return <Typography color="error">Error loading room</Typography>;
+  if (error) return <p className="text-sm text-red-500">Error loading room</p>;
   if (!arm) return null;
 
   const cellSize = 50;
@@ -90,10 +89,10 @@ export const Room: React.FC<{ roomPath: string; graph: any }> = ({ roomPath, gra
   const viewBox = `${minX} ${minY} ${viewWidth} ${viewHeight}`;
 
   return (
-    <div style={{ padding: "8px", backgroundColor: "#333", borderRadius: "4px" }}>
-      <Typography variant="caption" sx={{ color: "#ccc", display: "block", mb: 0.5 }}>
+    <div className="rounded-md border border-slate-800 bg-slate-900 p-2 text-slate-200">
+      <p className="mb-1 text-xs text-slate-300">
         {roomPath.split("/").pop()} ({arm.root_slot.width}x{arm.root_slot.height})
-      </Typography>
+      </p>
       <svg viewBox={viewBox} style={{ width: "100%", maxWidth: viewWidth * 2, display: "block" }}>
         {cells.map((row, y) =>
           row.map(

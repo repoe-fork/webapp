@@ -1,4 +1,3 @@
-import { AppBar, Box, Link as MUILink, Toolbar, Typography } from "@mui/material";
 import { Suspense, useEffect } from "react";
 import {
   useLocation,
@@ -14,13 +13,13 @@ import { AboutPage } from "routes/about";
 type Tab = "home" | "areas" | "sql" | "about";
 
 const NavLink = ({ label, href, active }: { label: string; href: string; active: boolean }) => (
-  <MUILink
+  <a
     href={href}
-    underline="none"
-    color="inherit"
-    sx={{ fontWeight: active ? 700 : 400, mr: 2 }}>
+    className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+      active ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"
+    }`}>
     {label}
-  </MUILink>
+  </a>
 );
 
 export function App() {
@@ -59,31 +58,31 @@ export function App() {
 
   return (
     <>
-      <AppBar position="static">
-        <Toolbar variant="dense">
-          <Typography variant="h6" sx={{ mr: 3 }}>
-            poe webapp
-          </Typography>
-          <NavLink label="Home" href={homeHref.href()} active={tab === "home"} />
-          <NavLink label="Areas" href={areasHref.href()} active={tab === "areas"} />
-          <NavLink
-            label="poe1 sqlite"
-            href={sqlPoe1Href.href()}
-            active={tab === "sql" && game !== "poe2"}
-          />
-          <NavLink
-            label="poe2 sqlite"
-            href={sqlPoe2Href.href()}
-            active={tab === "sql" && game === "poe2"}
-          />
-          <NavLink label="About" href={aboutHref.href()} active={tab === "about"} />
-        </Toolbar>
-      </AppBar>
-      <Box sx={{ p: 2 }}>
+      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-2">
+          <div className="text-lg font-semibold tracking-tight text-slate-900">poe webapp</div>
+          <nav className="flex flex-wrap gap-2">
+            <NavLink label="Home" href={homeHref.href()} active={tab === "home"} />
+            <NavLink label="Areas" href={areasHref.href()} active={tab === "areas"} />
+            <NavLink
+              label="poe1 sqlite"
+              href={sqlPoe1Href.href()}
+              active={tab === "sql" && game !== "poe2"}
+            />
+            <NavLink
+              label="poe2 sqlite"
+              href={sqlPoe2Href.href()}
+              active={tab === "sql" && game === "poe2"}
+            />
+            <NavLink label="About" href={aboutHref.href()} active={tab === "about"} />
+          </nav>
+        </div>
+      </header>
+      <main className="mx-auto max-w-6xl px-4 py-4">
         <Suspense fallback={<div>Loading...</div>}>
           <AppContent tab={tab} />
         </Suspense>
-      </Box>
+      </main>
     </>
   );
 }
