@@ -29,3 +29,26 @@
 - Aim for high information density at first glance.
 - Provide clear paths to drill into more detailed views of specific elements.
 - Favor layouts that let power users scan and cross-reference quickly, while keeping basics discoverable.
+
+## Playwright Testing
+
+A Playwright E2E testing setup is available to quickly verify changes.
+
+### Running Tests
+- `npm run e2e`: Run all E2E tests.
+- `npm run e2e -- tests/e2e/some_test.spec.ts`: Run a specific test.
+- `npm run e2e:ui`: Open the Playwright UI to interactively run and debug tests.
+
+### Network Caching
+To speed up tests and avoid being blocked by rate limits or connectivity issues with external data sources (`ggpk.exposed`, etc.), a caching fixture is provided in `tests/e2e/fixtures.ts`.
+- It caches GET requests to known data hosts in the `.playwright-cache` directory.
+- When writing new tests, import `test` and `expect` from `./fixtures` instead of `@playwright/test`.
+
+### Verification Tips
+When testing pages with dynamic content (like rooms and tiles), use:
+```typescript
+await page.waitForLoadState("networkidle");
+// Sometimes an extra timeout is helpful for images to settle
+await page.waitForTimeout(2000); 
+```
+to ensure all data and assets have been fetched before making assertions.
