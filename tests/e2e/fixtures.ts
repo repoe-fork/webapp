@@ -1,10 +1,27 @@
-import { test as base, expect } from "@playwright/test";
+import { test as base, expect, Page } from "@playwright/test";
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 const cacheDir = process.env.PLAYWRIGHT_CACHE_DIR ?? ".playwright-cache";
 const cacheableHosts = new Set(["repoe-fork.github.io", "ggpk.exposed", "i.ggpk.exposed"]);
+
+export async function waitForCascadingLoads(page: Page, timeout = 10000) {
+  const start = Date.now();
+  while (Date.now() - start < timeout) {
+    await page.waitForLoadState("networkidle");
+    const skeletonCount = await page.locator("text=/loading/i").count();
+    if (skeletonCount === 0) {
+      // Small grace period to ensure no new requests are kicked off by the just-loaded data
+      await page.waitForTimeout(200);
+      const newSkeletonCount = await page.locator("text=/loading/i").count();
+      if (newSkeletonCount === 0) {
+        return;
+      }
+    }
+    await page.waitForTimeout(100);
+  }
+}
 
 type CachedResponse = {
   status: number;

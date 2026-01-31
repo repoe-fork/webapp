@@ -45,10 +45,14 @@ To speed up tests and avoid being blocked by rate limits or connectivity issues 
 - When writing new tests, import `test` and `expect` from `./fixtures` instead of `@playwright/test`.
 
 ### Verification Tips
-When testing pages with dynamic content (like rooms and tiles), use:
+When testing pages with dynamic content (like rooms and tiles) that involve cascading loads, use the `waitForCascadingLoads` helper from `fixtures.ts`:
 ```typescript
-await page.waitForLoadState("networkidle");
-// Sometimes an extra timeout is helpful for images to settle
-await page.waitForTimeout(2000); 
+import { test, expect, waitForCascadingLoads } from "./fixtures";
+
+test("example", async ({ page }) => {
+  await page.goto("/some-url");
+  await waitForCascadingLoads(page);
+  // assertions here
+});
 ```
-to ensure all data and assets have been fetched before making assertions.
+This helper waits for the network to be idle AND for any "Loading..." placeholders to disappear, handling cases where one request triggers a UI update that then triggers another request.
