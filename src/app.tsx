@@ -8,7 +8,7 @@ import {
 } from "use-navigation-api";
 import { HomePage } from "routes";
 import { AreasPage, getAreas } from "routes/areas";
-import { SqlPage } from "routes/sql.$sequel";
+import { SqlPage } from "routes/sql";
 import { AboutPage } from "routes/about";
 import { useSuspenseQuery } from "@tanstack/react-query";
 

@@ -1,6 +1,6 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { Area } from "types/world_areas";
-import { AreaDetails, LegendState } from "./areas.$area";
+import { AreaDetails, LegendState } from "routes/area";
 import { useQueryParam } from "use-navigation-api";
 import React, { useState } from "react";
 import { ColorLegend } from "components/layout/color-legend";
