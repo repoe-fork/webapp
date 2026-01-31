@@ -1,58 +1,74 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Edge } from "components/layout/edge";
 import { Rooms } from "components/layout/rooms";
+import { Room, RoomJson } from "components/layout/room";
 import { getLayout } from "components/layout/layout";
 import { Accordion } from "components/ui/accordion";
-import { ColorLegend } from "components/layout/color-legend";
 import { useLocation, useNavigate, useQueryParam } from "use-navigation-api";
+import { Topology } from "types/world_areas";
 
 function roomKey(room: string, strings?: string[]) {
   return strings?.length ? `${room} "${strings.join('" "')}"` : room;
 }
 
-function parseRoomKey(key: string) {
-  if (!key || key === UNTAGGED_NODE) return undefined;
-  return key
-    .split('"')[0]
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
-const UNTAGGED_NODE = "<unknown>";
-export const Graph: React.FC<{
-  file: string;
-  addNodes: (names: Record<string, string[]>) => void;
-  colorMap: Record<string, { color: string; strings: string[] }>;
-}> = ({ file, colorMap, addNodes }) => {
-  const graph = useSuspenseQuery(getLayout(file)).data;
+export const Graph: React.FC<
+  ({ file: string; layout?: undefined } | { file?: undefined; layout: Topology }) & {
+    addNodes: (names: Record<string, string[]>) => void;
+    colorMap: Record<string, { color: string; strings: string[] }>;
+    addRooms?: (rooms: string[], file: string) => void;
+  }
+> = ({ layout, file = layout?.file, colorMap, addNodes, addRooms }) => {
+  const graph = useSuspenseQuery(getLayout(file!)).data;
   const navigation = useNavigate();
   const location = useLocation();
   const selectedRoom = useQueryParam("room");
+  const selectedRoomFile = useQueryParam("roomFile");
   const setRoom = useCallback(
-    (room: string) => navigation.navigate(location.setQuery("room", room).href()),
-    [location, navigation],
+    (room: string) => {
+      const next = location.clone();
+      if (room) {
+        next.setQuery("room", room);
+        next.setQuery("graph", file);
+      } else {
+        next.removeQuery("room");
+        next.setQuery("graph", file);
+      }
+      next.removeQuery("roomFile");
+      next.removeQuery("node");
+      navigation.navigate(String(next));
+    },
+    [location, navigation, file],
   );
   const [viewBox, scale, names] = useMemo(() => {
     return processGraph(graph.nodes);
   }, [graph.nodes]);
-  useEffect(() => void addNodes(names), [names]);
-  const legendItems = useMemo(() => {
-    return Object.keys(names).map((name) => ({
-      label: name || UNTAGGED_NODE,
-      color: colorMap[name]?.color || "gray",
-    }));
-  }, [names, colorMap]);
-
+  useEffect(() => void addNodes(names), [names, addNodes]);
+  useEffect(() => {
+    if (!addRooms || !graph.room_set) return;
+    const rooms = graph.room_set.map((room: any) => room.room_tag).filter((room: string) => room);
+    addRooms(rooms, file!);
+  }, [addRooms, graph.room_set, file]);
   if (!graph.nodes?.length) {
     return <>No data</>;
   }
 
+  const roomEntries = selectedRoom
+    ? (graph.room_set || []).filter((room: any) => room.room_tag === selectedRoom)
+    : [];
+  const selectedRoomEntry =
+    roomEntries.find((room: any) => room.file === selectedRoomFile) || roomEntries[0] || null;
+
+  useEffect(() => {
+    if (!selectedRoom || selectedRoomFile || !selectedRoomEntry) return;
+    const next = location.clone().setQuery("roomFile", selectedRoomEntry.file);
+    navigation.navigate(String(next), { history: "replace" });
+  }, [location, navigation, selectedRoom, selectedRoomEntry, selectedRoomFile]);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 lg:flex-row">
-        <div className="max-w-[500px] flex-1">
+        <div className="flex-1">
           <svg viewBox={viewBox} className="w-full rounded-md border border-slate-200 bg-slate-900">
             {graph.edges.map((edge: Edge) => {
               return <Edge {...edge} graph={graph} scale={scale} key={`${edge.from}-${edge.to}`} />;
@@ -78,23 +94,36 @@ export const Graph: React.FC<{
               );
             })}
           </svg>
-          {selectedRoom && <Rooms tag={selectedRoom} graph={graph} />}
         </div>
-        <div className="flex-1 space-y-3">
-          <ColorLegend
-            title={file}
-            items={legendItems}
-            onSelect={(label) => {
-              setRoom(!label ? "" : label.split('"')[0].trim());
-              const next = location.clone().removeQuery("node");
-              navigation?.navigate(String(next), { history: "replace" });
-            }}
-          />
-          <Accordion title="graph">
-            <pre className="whitespace-pre-wrap">{JSON.stringify(graph, undefined, 2)}</pre>
-          </Accordion>
+        <div className="flex-1">
+          {selectedRoomEntry ? (
+            <div>
+              <p className="mb-1 text-xs text-slate-400">{selectedRoom} preview</p>
+              <Room roomPath={selectedRoomEntry.file} graph={graph} cellSize={44} />
+            </div>
+          ) : (
+            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-400/50 bg-slate-950/20 p-6 text-sm text-slate-400">
+              Select a room to preview it here.
+            </div>
+          )}
         </div>
       </div>
+      <Accordion title="Layout JSON">
+        <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-slate-200 bg-slate-950 p-2 text-xs text-slate-100">
+          {JSON.stringify(layout, undefined, 2)}
+        </pre>
+      </Accordion>
+      <Accordion title="Graph JSON">
+        <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-slate-200 bg-slate-950 p-2 text-xs text-slate-100">
+          {JSON.stringify(graph, undefined, 2)}
+        </pre>
+      </Accordion>
+      {selectedRoomEntry && (
+        <Accordion title="Room JSON">
+          <RoomJson roomPath={selectedRoomEntry.file} />
+        </Accordion>
+      )}
+      {selectedRoom && <Rooms tag={selectedRoom} graph={graph} />}
       {graph.subgraphs && (
         <div>
           <h3 className="text-lg font-semibold text-slate-900">Subgraphs</h3>

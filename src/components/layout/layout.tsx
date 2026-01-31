@@ -2,7 +2,6 @@ import { queryOptions } from "@tanstack/react-query";
 import React from "react";
 import { Topology } from "types/world_areas";
 import { Graph } from "components/layout/graph";
-import { Accordion } from "components/ui/accordion";
 
 export const getLayout = (filename: string) =>
   queryOptions({
@@ -15,13 +14,12 @@ export const LayoutComponent: React.FC<{
   layout: Topology;
   addNodes: (added: Record<string, string[]>) => void;
   colorMap: Record<string, { color: string; strings: string[] }>;
-}> = ({ layout, colorMap, addNodes }) => {
+  addRooms?: (rooms: string[], file: string) => void;
+}> = ({ layout, colorMap, addNodes, addRooms }) => {
   return (
     <div>
-      <Accordion title={layout.file}>
-        <pre className="whitespace-pre-wrap">{JSON.stringify(layout, undefined, 2)}</pre>
-      </Accordion>
-      <Graph file={layout.file} colorMap={colorMap} addNodes={addNodes} />
+      <h4 className="mb-2 text-sm font-semibold text-slate-900">{layout.file}</h4>
+      <Graph layout={layout} colorMap={colorMap} addNodes={addNodes} addRooms={addRooms} />
     </div>
   );
 };

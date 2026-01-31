@@ -1,14 +1,16 @@
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import {
   useLocation,
   useLocationWithParams,
   useNavigate,
+  useQueryParam,
   useQueryParams,
 } from "use-navigation-api";
 import { HomePage } from "routes";
-import { AreasPage } from "routes/areas";
+import { AreasPage, getAreas } from "routes/areas";
 import { SqlPage } from "routes/sql.$sequel";
 import { AboutPage } from "routes/about";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 type Tab = "home" | "areas" | "sql" | "about";
 
@@ -21,6 +23,108 @@ const NavLink = ({ label, href, active }: { label: string; href: string; active:
     {label}
   </a>
 );
+
+const AreaCombobox = () => {
+  const { data: areas } = useSuspenseQuery(getAreas);
+  const navigation = useNavigate();
+  const location = useLocation();
+  const selectedAreaId = useQueryParam("area");
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const selectedArea = selectedAreaId ? areas[selectedAreaId] : null;
+
+  useEffect(() => {
+    setSearch(selectedArea?.name ?? "");
+  }, [selectedArea?.name, selectedAreaId]);
+
+  const areaList = useMemo(() => Object.values(areas), [areas]);
+
+  const filteredAreas = useMemo(() => {
+    const trimmed = search.trim().toLowerCase();
+    if (!trimmed) return areaList;
+    return areaList.filter(
+      (area) =>
+        area.name.toLowerCase().includes(trimmed) || area.id.toLowerCase().includes(trimmed),
+    );
+  }, [areaList, search]);
+
+  const visibleAreas = filteredAreas.slice(0, 200);
+
+  const selectArea = (id: string) => {
+    const next = location.clone().setQuery("tab", "areas").setQuery("area", id);
+    next.removeQuery("graph").removeQuery("room");
+    navigation.navigate(String(next));
+    setOpen(false);
+  };
+
+  const clearArea = () => {
+    const next = location.clone().removeQuery("area").removeQuery("graph").removeQuery("room");
+    navigation.navigate(String(next));
+    setSearch("");
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative min-w-[220px]">
+      <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+        Area
+      </label>
+      <div className="mt-1 flex items-center gap-2">
+        <input
+          role="combobox"
+          aria-expanded={open}
+          aria-controls="area-combobox-list"
+          className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+          placeholder="Search areas..."
+          value={search}
+          onChange={(event) => {
+            setSearch(event.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setOpen(false)}
+        />
+        {selectedAreaId && (
+          <button
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={clearArea}
+            className="rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-600 hover:bg-slate-100">
+            Clear
+          </button>
+        )}
+      </div>
+      {open && (
+        <div className="absolute left-0 right-0 top-full z-20 mt-2 rounded-md border border-slate-200 bg-white shadow-lg">
+          <div className="flex items-center justify-between px-3 py-2 text-xs text-slate-500">
+            <span>
+              Showing {visibleAreas.length} of {filteredAreas.length}
+            </span>
+          </div>
+          <ul id="area-combobox-list" role="listbox" className="max-h-72 overflow-auto">
+            {visibleAreas.map(({ id, name }) => {
+              const isSelected = id === selectedAreaId;
+              return (
+                <li key={id}>
+                  <button
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => selectArea(id)}
+                    className={`w-full px-3 py-2 text-left text-sm ${
+                      isSelected ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"
+                    }`}>
+                    {name}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export function App() {
   const location = useLocation();
@@ -76,6 +180,11 @@ export function App() {
             />
             <NavLink label="About" href={aboutHref.href()} active={tab === "about"} />
           </nav>
+          <div className="ml-auto">
+            <Suspense fallback={<div className="text-xs text-slate-400">Loading areas...</div>}>
+              {tab === "areas" ? <AreaCombobox /> : null}
+            </Suspense>
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-4">

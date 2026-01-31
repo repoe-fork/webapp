@@ -18,13 +18,17 @@ export const getRoom = (filename: string) =>
         .then(parseARM),
   });
 
-export const Room: React.FC<{ roomPath: string; graph: any }> = ({ roomPath, graph }) => {
+export const Room: React.FC<{
+  roomPath: string;
+  graph: any;
+  cellSize?: number;
+  className?: string;
+}> = ({ roomPath, graph, cellSize = 50, className }) => {
   const { data: arm, error } = useSuspenseQuery(getRoom(roomPath));
 
   if (error) return <p className="text-sm text-red-500">Error loading room</p>;
   if (!arm) return null;
 
-  const cellSize = 50;
   const width = arm.root_slot.width * cellSize;
   const height = arm.root_slot.height * cellSize;
 
@@ -89,7 +93,8 @@ export const Room: React.FC<{ roomPath: string; graph: any }> = ({ roomPath, gra
   const viewBox = `${minX} ${minY} ${viewWidth} ${viewHeight}`;
 
   return (
-    <div className="rounded-md border border-slate-800 bg-slate-900 p-2 text-slate-200">
+    <div
+      className={`rounded-md border border-slate-800 bg-slate-900 p-2 text-slate-200 ${className ?? ""}`}>
       <p className="mb-1 text-xs text-slate-300">
         {roomPath.split("/").pop()} ({arm.root_slot.width}x{arm.root_slot.height})
       </p>
@@ -139,5 +144,18 @@ export const Room: React.FC<{ roomPath: string; graph: any }> = ({ roomPath, gra
         )}
       </svg>
     </div>
+  );
+};
+
+export const RoomJson: React.FC<{ roomPath: string }> = ({ roomPath }) => {
+  const { data: arm, error } = useSuspenseQuery(getRoom(roomPath));
+
+  if (error) return <p className="text-sm text-red-500">Error loading room JSON</p>;
+  if (!arm) return null;
+
+  return (
+    <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-slate-200 bg-slate-950 p-2 text-xs text-slate-100">
+      {JSON.stringify(arm, undefined, 2)}
+    </pre>
   );
 };
