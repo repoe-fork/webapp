@@ -1,10 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Edge } from "components/layout/edge";
 import { Rooms } from "components/layout/rooms";
 import { getLayout } from "components/layout/layout";
 import { Accordion } from "components/ui/accordion";
 import { ColorLegend } from "components/layout/color-legend";
+import { useLocation, useNavigate, useQueryParam } from "use-navigation-api";
 
 function roomKey(room: string, strings?: string[]) {
   return strings?.length ? `${room} "${strings.join('" "')}"` : room;
@@ -26,7 +27,13 @@ export const Graph: React.FC<{
   colorMap: Record<string, { color: string; strings: string[] }>;
 }> = ({ file, colorMap, addNodes }) => {
   const graph = useSuspenseQuery(getLayout(file)).data;
-  const [roomTags, setRoomTags] = useState<string[]>();
+  const navigation = useNavigate();
+  const location = useLocation();
+  const selectedRoom = useQueryParam("room");
+  const setRoom = useCallback(
+    (room: string) => navigation.navigate(location.setQuery("room", room).href()),
+    [location, navigation],
+  );
   const [viewBox, scale, names] = useMemo(() => {
     return processGraph(graph.nodes);
   }, [graph.nodes]);
@@ -46,37 +53,42 @@ export const Graph: React.FC<{
     <div className="space-y-4">
       <div className="flex flex-col gap-4 lg:flex-row">
         <div className="max-w-[500px] flex-1">
-          <svg
-            viewBox={viewBox}
-            className="w-full rounded-md border border-slate-200 bg-slate-900">
+          <svg viewBox={viewBox} className="w-full rounded-md border border-slate-200 bg-slate-900">
             {graph.edges.map((edge: Edge) => {
               return <Edge {...edge} graph={graph} scale={scale} key={`${edge.from}-${edge.to}`} />;
             })}
-            {graph.nodes.map(({ x, y, room, strings }: any, i: number) => (
-              <circle
-                key={i}
-                cx={x}
-                cy={y}
-                r={(room ? 4 : 3) * scale}
-                fill={colorMap[roomKey(room, strings)]?.color || "gray"}
-                onClick={() => setRoomTags([room, ...(strings || [])])}
-                style={{ cursor: room ? "pointer" : "default" }}>
-                <title>
-                  {room || ""}
-                  {strings?.length ? '\n"' + strings.join('"\n"') + '"' : ""}
-                </title>
-              </circle>
-            ))}
+            {graph.nodes.map(({ x, y, room, strings }: any, i: number) => {
+              const isSelected = selectedRoom === room;
+              return (
+                <circle
+                  key={i}
+                  cx={x}
+                  cy={y}
+                  r={(room ? 4 : 3) * scale}
+                  fill={colorMap[roomKey(room, strings)]?.color || "gray"}
+                  stroke={isSelected ? "#f8fafc" : "none"}
+                  strokeWidth={isSelected ? 2 * scale : 0}
+                  onClick={() => setRoom(room)}
+                  style={{ cursor: room ? "pointer" : "default" }}>
+                  <title>
+                    {room || ""}
+                    {strings?.length ? '\n"' + strings.join('"\n"') + '"' : ""}
+                  </title>
+                </circle>
+              );
+            })}
           </svg>
-          {roomTags?.map((tag) => (
-            <Rooms key={tag} tag={tag} graph={graph} />
-          ))}
+          {selectedRoom && <Rooms tag={selectedRoom} graph={graph} />}
         </div>
         <div className="flex-1 space-y-3">
           <ColorLegend
             title={file}
             items={legendItems}
-            onSelect={(label) => setRoomTags(parseRoomKey(label))}
+            onSelect={(label) => {
+              setRoom(!label ? "" : label.split('"')[0].trim());
+              const next = location.clone().removeQuery("node");
+              navigation?.navigate(String(next), { history: "replace" });
+            }}
           />
           <Accordion title="graph">
             <pre className="whitespace-pre-wrap">{JSON.stringify(graph, undefined, 2)}</pre>
