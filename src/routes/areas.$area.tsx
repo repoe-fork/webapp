@@ -1,19 +1,10 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { getAreas } from "./areas";
 import { LayoutComponent } from "components/layout/layout";
 import React, { useMemo, useState } from "react";
 // @ts-ignore
 import palette from "google-palette";
+import { Area } from "types/world_areas";
 
-export const Route = createFileRoute("/areas/$area")({
-  component: AreaComponent,
-});
-
-function AreaComponent() {
-  const id = Route.useParams().area;
-  const areas = useSuspenseQuery(getAreas).data;
-  const area = areas[id];
+export function AreaDetails({ area }: { area: Area }) {
   const [nodes, setNodes] = useState<Record<string, string[]>>({});
 
   const colorMap = useMemo(() => {

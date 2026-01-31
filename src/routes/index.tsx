@@ -1,11 +1,6 @@
 import * as React from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/")({
-  component: HomeComponent,
-});
-
-function HomeComponent() {
+export function HomePage() {
   return (
     <div className="p-2">
       <h3>Nothing to see here, yet</h3>

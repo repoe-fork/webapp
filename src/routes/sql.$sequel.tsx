@@ -1,12 +1,9 @@
 import { SQLViewer } from "components/sql";
-import { createFileRoute } from "@tanstack/react-router";
+import { useQueryParam } from "use-navigation-api";
 
-export const Route = createFileRoute("/sql/$sequel")({
-  component: SqlComponent,
-});
-
-function SqlComponent() {
-  const sequel = Route.useParams().sequel;
+export function SqlPage() {
+  const game = useQueryParam("game") || "poe1";
+  const sequel = game === "poe2" ? "2" : "1";
   return (
     <SQLViewer
       url={`https://repoe-fork.github.io/dat-export/poe${sequel === "2" ? 2 : ""}/dat.sqlite`}
