@@ -1,5 +1,0 @@
-Use this file to log any issues found while configuring the use-navigation-api package.
-
-## 2025-01-19
-- Needed a helper to build links that update multiple query params (e.g., `tab`, `game`, `area`). Looked in `node_modules/use-navigation-api/README.md` first; it only mentions `useLocation` and `useQueryParam`. Found `useLocationWithParams` in `src/location/useLocationWithParam.ts` while searching the package source. Suggest documenting `useLocationWithParam(s)` in the README usage section with examples for query-param routing.
-- `npm run build` fails in this project: Vite cannot resolve `use-navigation-api` because `dist/` is missing (`node_modules/use-navigation-api/dist` does not exist), even though `package.json` points `main`/`module`/`exports` to `dist/*`. Recommended fix: publish built artifacts (ensure `dist/` is included in the npm package, e.g., run the library build before publish and include `dist` in `files`), or provide an `exports` entry for source files for dev installs.
