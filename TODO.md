@@ -1,0 +1,1 @@
+- figure out the multiple entrances on Metadata/Terrain/Gallows/Act1/1_4/Graphs/oldforest_W_E.tgr ("unique1" vs "shuffle1")?

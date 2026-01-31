@@ -1,4 +1,5 @@
 export interface ARMSlot {
+  tag: "k";
   width: number;
   height: number;
   tile_tag: string | null;
@@ -20,10 +21,7 @@ export interface ARMSlot {
   >;
 }
 
-export type ARMCell =
-  | ({ tag: "k" } & ARMSlot)
-  | { tag: "f"; fill: string | null }
-  | { tag: "s" | "o" | "n" };
+export type ARMCell = ARMSlot | { tag: "f"; fill: string | null } | { tag: "s" | "o" | "n" };
 
 export interface ARMFile {
   version: number;
@@ -48,7 +46,9 @@ export function parseARM(text: string): ARMFile {
   const version = parseInt(versionMatch[1]);
 
   const stringCount = parseInt(lines[lineIdx++]);
-  const strings = lines.slice(lineIdx, lineIdx + stringCount).map((s) => s.trim().replace(/^"|"$/g, ""));
+  const strings = lines
+    .slice(lineIdx, lineIdx + stringCount)
+    .map((s) => s.trim().replace(/^"|"$/g, ""));
   lineIdx += stringCount;
 
   const getString = (idx: number) => (idx > 0 && idx <= strings.length ? strings[idx - 1] : null);
@@ -60,8 +60,13 @@ export function parseARM(text: string): ARMFile {
   numbers.push(lines[lineIdx++].split(/\s+/).map(Number));
 
   const parseSlot = (line: string): ARMSlot => {
-    const vals = line.trim().substring(1).trim().split(/\s+/).map(Number);
+    const vals = line
+      .replace(/^\s*k\s/, "")
+      .trim()
+      .split(/\s+/)
+      .map(Number);
     return {
+      tag: "k",
       width: vals[0],
       height: vals[1],
       tile_tag: getString(vals[22]),
@@ -137,7 +142,7 @@ export function parseARM(text: string): ARMFile {
       line = match[3];
 
       if (tag === "k") {
-        row.push({ ...parseSlot("k " + data), tag: "k" });
+        row.push(parseSlot(data));
       } else if (tag === "f") {
         row.push({ tag: "f", fill: getString(parseInt(data)) });
       } else {
