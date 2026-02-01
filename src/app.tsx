@@ -67,9 +67,7 @@ const AreaCombobox = () => {
 
   return (
     <div className="relative min-w-[220px]">
-      <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-        Area
-      </label>
+      <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Area</label>
       <div className="mt-1 flex items-center gap-2">
         <input
           role="combobox"
@@ -154,11 +152,11 @@ export function App() {
     navigation?.navigate(String(dest), { history: "replace" });
   }, [navigation, location]);
 
-  const homeHref = useLocationWithParams({ tab: "home", area: null, game: null });
-  const areasHref = useLocationWithParams({ tab: "areas", area: null, game: null });
-  const sqlPoe1Href = useLocationWithParams({ tab: "sql", game: "poe1", area: null });
-  const sqlPoe2Href = useLocationWithParams({ tab: "sql", game: "poe2", area: null });
-  const aboutHref = useLocationWithParams({ tab: "about", area: null, game: null });
+  const homeHref = location.query("").setQuery({ tab: "home", area: null, game: null }).href();
+  const areasHref = location.query("").setQuery({ tab: "areas", area: null, game: null }).href();
+  const sqlPoe1Href = location.query("").setQuery({ tab: "sql", game: "poe1", area: null }).href();
+  const sqlPoe2Href = location.query("").setQuery({ tab: "sql", game: "poe2", area: null }).href();
+  const aboutHref = location.query("").setQuery({ tab: "about", area: null, game: null }).href();
 
   return (
     <>
@@ -166,19 +164,19 @@ export function App() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-2">
           <div className="text-lg font-semibold tracking-tight text-slate-900">poe webapp</div>
           <nav className="flex flex-wrap gap-2">
-            <NavLink label="Home" href={homeHref.href()} active={tab === "home"} />
-            <NavLink label="Areas" href={areasHref.href()} active={tab === "areas"} />
+            <NavLink label="Home" href={homeHref} active={tab === "home"} />
+            <NavLink label="Areas" href={areasHref} active={tab === "areas"} />
             <NavLink
               label="poe1 sqlite"
-              href={sqlPoe1Href.href()}
+              href={sqlPoe1Href}
               active={tab === "sql" && game !== "poe2"}
             />
             <NavLink
               label="poe2 sqlite"
-              href={sqlPoe2Href.href()}
+              href={sqlPoe2Href}
               active={tab === "sql" && game === "poe2"}
             />
-            <NavLink label="About" href={aboutHref.href()} active={tab === "about"} />
+            <NavLink label="About" href={aboutHref} active={tab === "about"} />
           </nav>
           <div className="ml-auto">
             <Suspense fallback={<div className="text-xs text-slate-400">Loading areas...</div>}>

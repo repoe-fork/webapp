@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { parseARM } from "lib/arm";
-import { Tile } from "components/layout/tile";
+import { CandidateMatch, Tile } from "components/layout/tile";
+import { SlotInspector } from "components/layout/slot_info";
 
 const TRUE = true as const;
 const FALSE = false as const;
@@ -22,20 +23,36 @@ export const Room: React.FC<{
   roomPath: string;
   graph: any;
   cellSize?: number;
-  className?: string;
-}> = ({ roomPath, graph, cellSize = 50, className }) => {
+  orthogonal?: boolean;
+  detailed?: boolean;
+  selected?: boolean;
+}> = ({ roomPath, graph, cellSize = 50, orthogonal, detailed, selected }) => {
   const { data: arm, error } = useSuspenseQuery(getRoom(roomPath));
+  const [inspected, setInspected] = useState<{
+    x: number;
+    y: number;
+    cell: any;
+    candidates: CandidateMatch[];
+    selectedCandidateIndex: number | null;
+  } | null>(null);
 
   if (error) return <p className="text-sm text-red-500">Error loading room</p>;
   if (!arm) return null;
 
-  const width = arm.root_slot.width * cellSize;
-  const height = arm.root_slot.height * cellSize;
+  const getIso = (x: number, y: number) => {
+    if (orthogonal) {
+      return { x: x * cellSize, y: y * cellSize };
+    }
+    return {
+      x: (x - y) * (cellSize / 2),
+      y: (x + y) * (cellSize / 4),
+    };
+  };
 
-  let minX = 0;
-  let minY = 0;
-  let maxX = width;
-  let maxY = height;
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
 
   const cells = arm.grid.map((row, y) =>
     row.map((cell, x) => {
@@ -44,8 +61,7 @@ export const Room: React.FC<{
       let opacity = 0.8;
       let cellWidth = 1;
       let cellHeight = 1;
-      // Y-axis of svg (0,0 top left) is inverted relative to the grid cells (0,0 bottom left)
-      let yOffset = -1;
+      let yOffset = orthogonal ? -1 : 0;
       let xOffset = 0;
 
       switch (cell.tag) {
@@ -54,20 +70,13 @@ export const Room: React.FC<{
           stroke = "#778";
           cellWidth = cell.width;
           cellHeight = cell.height;
-          if (!cell.origin?.includes("n")) {
-            yOffset += cell.height - 1;
+          if (orthogonal) {
+            if (!cell.origin?.includes("n")) yOffset += cell.height - 1;
+            if (cell.origin?.includes("e")) xOffset -= cell.width - 1;
+          } else {
+            if (cell.origin?.includes("n")) yOffset -= cell.height - 1;
+            if (cell.origin?.includes("e")) xOffset -= cell.width - 1;
           }
-          if (cell.origin?.includes("e")) {
-            xOffset -= cell.width - 1;
-          }
-
-          const left = (x + xOffset) * cellSize;
-          const top = height - (y + yOffset) * cellSize;
-
-          minX = Math.min(minX, left);
-          minY = Math.min(minY, top);
-          maxX = Math.max(maxX, left + cellWidth * cellSize);
-          maxY = Math.max(maxY, top + cellHeight * cellSize);
           break;
         case "f":
           fill = "#445";
@@ -84,65 +93,134 @@ export const Room: React.FC<{
           return { skip: TRUE };
       }
 
-      return { cell, fill, stroke, opacity, cellWidth, cellHeight, xOffset, yOffset, skip: FALSE };
+      const p1 = getIso(
+        x + xOffset,
+        orthogonal ? arm.root_slot.height - (y + yOffset) : y + yOffset,
+      );
+      const p2 = getIso(
+        x + xOffset + cellWidth,
+        orthogonal ? arm.root_slot.height - (y + yOffset) : y + yOffset,
+      );
+      const p3 = getIso(
+        x + xOffset + cellWidth,
+        orthogonal ? arm.root_slot.height - (y + yOffset + cellHeight) : y + yOffset + cellHeight,
+      );
+      const p4 = getIso(
+        x + xOffset,
+        orthogonal ? arm.root_slot.height - (y + yOffset + cellHeight) : y + yOffset + cellHeight,
+      );
+
+      const points = [p1, p2, p3, p4];
+      points.forEach((p) => {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+      });
+
+      return {
+        cell,
+        fill,
+        stroke,
+        opacity,
+        cellWidth,
+        cellHeight,
+        xOffset,
+        yOffset,
+        skip: FALSE,
+        p1,
+        points: points.map((p) => `${p.x},${p.y}`).join(" "),
+      };
     }),
   );
 
   const viewWidth = maxX - minX;
   const viewHeight = maxY - minY;
-  const viewBox = `${minX} ${minY} ${viewWidth} ${viewHeight}`;
+  const viewBox = `${minX - 10} ${minY - 10} ${viewWidth + 20} ${viewHeight + 20}`;
 
   return (
     <div
-      className={`rounded-md border border-slate-800 bg-slate-900 p-2 text-slate-200 ${className ?? ""}`}>
-      <p className="mb-1 text-xs text-slate-300">
-        {roomPath.split("/").pop()} ({arm.root_slot.width}x{arm.root_slot.height})
-      </p>
+      className={`rounded-md border border-slate-800 bg-slate-900 p-2 text-slate-200 ${
+        selected ? "ring-2 ring-slate-200" : "hover:border-slate-500"
+      }`}>
+      <div className="mb-1 flex items-center justify-between">
+        <p className="text-xs text-slate-300">
+          {roomPath.split("/").pop()} ({arm.root_slot.width}x{arm.root_slot.height})
+        </p>
+      </div>
       <svg viewBox={viewBox} style={{ width: "100%", maxWidth: viewWidth * 2, display: "block" }}>
         {cells.map((row, y) =>
-          row.map(
-            ({ cell, fill, stroke, opacity, cellWidth, cellHeight, xOffset, yOffset, skip }, x) =>
-              skip ? null : (
-                <>
-                  <rect
-                    key={`${x}-${y}`}
-                    x={(x + xOffset) * cellSize}
-                    y={height - (y + yOffset) * cellSize}
-                    width={cellWidth * cellSize}
-                    height={cellHeight * cellSize}
-                    fill={fill}
-                    stroke={stroke}
-                    strokeWidth={0.5}
-                    opacity={opacity}>
-                    <title>
-                      {x},{y} - {cell.tag}
-                      {cell.tag === "k" &&
-                        ` (${cellWidth}x${cellHeight}) from ${cell.origin}${
-                          cell.tile_tag ? `\nTag: ${cell.tile_tag}` : ""
-                        }\nEdges: ${Object.entries(cell.edges)
-                          .map(([k, v]) => `${k}:${v.edge}`)
-                          .join(", ")}\n${Object.entries(cell.corners)
-                          .map(([k, v]: any) => `${k}:${v.ground}`)
-                          .join(", ")}`}
-                      {cell.tag === "f" && `\nFill: ${cell.fill}`}
-                    </title>
-                  </rect>
-                  {cell.tag === "k" && (
-                    <Tile
-                      x={x}
-                      y={y}
-                      posX={(x + xOffset) * cellSize}
-                      posY={height - (y + yOffset) * cellSize}
-                      room={arm}
-                      graph={graph}
-                      cellSize={cellSize}
-                    />
-                  )}
-                </>
-              ),
+          row.map(({ cell, fill, stroke, opacity, skip, p1, points }, x) =>
+            skip ? null : (
+              <React.Fragment key={`${x}-${y}`}>
+                <polygon
+                  points={points}
+                  fill={fill}
+                  stroke={stroke}
+                  strokeWidth={0.5}
+                  opacity={opacity}
+                  onClick={() => {
+                    if (cell.tag !== "k") {
+                      setInspected(null);
+                    }
+                  }}>
+                  <title>
+                    {x},{y} - {cell.tag}
+                    {cell.tag === "k" &&
+                      ` (${cell.width}x${cell.height}) from ${cell.origin}${
+                        cell.tile_tag ? `\nTag: ${cell.tile_tag}` : ""
+                      }\nEdges:\n${Object.entries(cell.edges)
+                        .map(
+                          ([k, v]) =>
+                            `  ${k}: ${v.edge || "none"} (${v.exit}, ${v.virtual_exit}) ${
+                              v.exit === (["w", "e"].includes(k) ? cell.height : cell.width) * 3
+                                ? "[LIMIT]"
+                                : ""
+                            }`,
+                        )
+                        .join("\n")}\nCorners:\n${Object.entries(cell.corners)
+                        .map(([k, v]: any) => `  ${k}: ${v.ground || "none"} (h:${v.height})`)
+                        .join("\n")}`}
+                    {cell.tag === "f" && `\nFill: ${cell.fill}`}
+                  </title>
+                </polygon>
+                {cell.tag === "k" && (
+                  <Tile
+                    x={x}
+                    y={y}
+                    posX={p1.x}
+                    posY={p1.y}
+                    room={arm}
+                    graph={graph}
+                    cellSize={cellSize}
+                    onInspect={(candidates) =>
+                      detailed &&
+                      setInspected({
+                        x,
+                        y,
+                        cell,
+                        candidates,
+                        selectedCandidateIndex: null,
+                      })
+                    }
+                    isInspected={inspected?.x === x && inspected?.y === y}
+                  />
+                )}
+              </React.Fragment>
+            ),
           ),
         )}
       </svg>
+      {detailed && inspected && (
+        <SlotInspector
+          slot={inspected.cell}
+          candidates={inspected.candidates}
+          x={inspected.x}
+          y={inspected.y}
+          selectedCandidateIndex={inspected.selectedCandidateIndex}
+          onSelectCandidate={(idx) => setInspected({ ...inspected, selectedCandidateIndex: idx })}
+        />
+      )}
     </div>
   );
 };

@@ -75,8 +75,17 @@ export class TileKey {
 
     for (const [s, side] of Object.entries(sideMap)) {
       const edge = slot.edges[s as keyof typeof sideMap];
-      key.edge_types[side] = edge.edge;
-      key.offsets[side] = { real: edge.exit, virtual: edge.virtual_exit };
+      const sideKey = s as "n" | "e" | "s" | "w";
+      const isVertical = sideKey === "w" || sideKey === "e";
+      const limitIdx = isVertical ? slot.height * 3 : slot.width * 3;
+
+      if (edge.edge && edge.exit !== limitIdx) {
+        key.edge_types[side] = edge.edge;
+        key.offsets[side] = { real: edge.exit, virtual: edge.virtual_exit };
+      } else {
+        key.edge_types[side] = null;
+        key.offsets[side] = { real: 0, virtual: 0 };
+      }
     }
 
     for (const [c, corner] of Object.entries(cornerMap)) {
@@ -186,7 +195,8 @@ export function fitsInSlot(tile: TileKey, slot: TileKey): SlotFitResult {
 
   if (reasons.length > 0) return { success: false, failureReason: reasons.join("\n") };
 
-  const isWild = (s: string | null) => s === "WildcardEdge" || s === "wildcard";
+  const isWild = (s: string | null) =>
+    s !== null && (s.includes("WildcardEdge") || s.toLowerCase().includes("wildcard"));
 
   for (let i = 0; i < 4; i++) {
     const tileEt = tile.edge_types[i];
@@ -216,9 +226,11 @@ export function fitsInSlot(tile: TileKey, slot: TileKey): SlotFitResult {
       if (tileGt !== slotGt) {
         reasons.push(`Ground mismatch on corner ${i}`);
       }
-    } else if (tileGt || slotGt) {
-      reasons.push(`Ground presence mismatch on corner ${i}`);
+    } else if (slotGt && !tileGt) {
+      // Slot requires ground, but tile doesn't have it
+      reasons.push(`Ground missing on corner ${i}`);
     }
+    // Note: We allow tile to have ground even if slot doesn't specify it.
   }
 
   let commonDelta: number | null = null;

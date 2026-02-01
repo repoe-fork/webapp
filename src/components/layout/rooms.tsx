@@ -34,11 +34,7 @@ export const Rooms: React.FC<{ tag: string; graph: any }> = ({ tag, graph }) => 
                 roomPath={room.file}
                 graph={graph}
                 cellSize={36}
-                className={
-                  room.file === selectedRoomFile
-                    ? "ring-2 ring-slate-200"
-                    : "hover:border-slate-500"
-                }
+                selected={room.file === selectedRoomFile}
               />
             </button>
           </React.Suspense>

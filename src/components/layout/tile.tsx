@@ -4,6 +4,7 @@ import { queryOptions, useQueries, useSuspenseQuery } from "@tanstack/react-quer
 import { parseMTP } from "lib/mtp";
 import { parseTDT, TDTFile } from "lib/tdt";
 import { fitsInSlot, TileKey } from "lib/tile_matching";
+import { useLocation, useNavigate, useQueryParam } from "use-navigation-api";
 
 export const getSpriteSheet = (filename: string) =>
   queryOptions({
@@ -29,12 +30,13 @@ export const getTDT = (filename: string) =>
         .then(parseTDT),
   });
 
-interface MatchedTile {
+export interface CandidateMatch {
   tile: any;
   tdt: TDTFile;
   rotation: number;
   flip: boolean;
   failureReason?: string;
+  success: boolean;
 }
 
 export const Tile: React.FC<{
@@ -45,9 +47,26 @@ export const Tile: React.FC<{
   room: ARMFile;
   graph: any;
   cellSize: number;
-}> = ({ x, y, posX, posY, room, graph, cellSize }) => {
+  onInspect?: (candidates: CandidateMatch[]) => void;
+  isInspected?: boolean;
+  selectedMatchIndex?: number | null;
+  onSelectMatch?: (index: number | null) => void;
+}> = ({
+  x,
+  y,
+  posX,
+  posY,
+  room,
+  graph,
+  cellSize,
+  onInspect,
+  isInspected,
+}) => {
   const cell = room.grid[y][x] as ARMSlot;
   if (cell.tag !== "k") return null;
+  const navigate = useNavigate();
+  const selectedTile = useQueryParam("tile");
+  const location = useLocation();
 
   const tileCandidates = useMemo(
     () =>
@@ -60,8 +79,8 @@ export const Tile: React.FC<{
     queries: tileCandidates.map((tile: any) => getTDT(tile.file)),
   });
 
-  const matchedTiles = useMemo(() => {
-    const results: MatchedTile[] = [];
+  const tileResults = useMemo(() => {
+    const results: CandidateMatch[] = [];
     const slotKey = TileKey.fromSlot(cell);
 
     tileCandidates.forEach((tile: any, i: number) => {
@@ -77,57 +96,60 @@ export const Tile: React.FC<{
         for (const rotation of rotations) {
           const mutatedKey = flippedKey.rotated(rotation);
           const res = fitsInSlot(mutatedKey, slotKey);
-          if (res.success) {
-            results.push({ tile, tdt, rotation, flip });
-          }
+          results.push({
+            tile,
+            tdt,
+            rotation,
+            flip,
+            success: res.success,
+            failureReason: res.failureReason,
+          });
         }
       }
     });
     return results;
   }, [tileCandidates, tdtQueries, cell]);
 
-  const [index, setIndex] = useState(0);
+  const firstSuccess = tileResults.find((r) => r.success);
 
   useEffect(() => {
-    if (index >= matchedTiles.length) {
-      setIndex(0);
+    if (!selectedTile) {
+      let file = firstSuccess?.tile?.file;
+      if (!file) return;
+      navigate.navigate(location.setQuery("tile", file));
     }
-  }, [index, matchedTiles.length]);
+  }, [selectedTile, firstSuccess, navigate]);
 
-  if (!matchedTiles.length) return null;
-
-  const match = matchedTiles[index];
+  const displayMatch =
+    (isInspected && selectedTile && tileResults.find(({ tile }) => selectedTile === tile.file)) ||
+    firstSuccess;
 
   return (
-    <g>
-      <Suspense
-        fallback={
-          <rect x={posX} y={posY} width={cellSize} height={cellSize} fill="gray" opacity={0.3} />
-        }>
-        <Minimap tile={match.tile} x={posX} y={posY} rotation={match.rotation} flip={match.flip} />
-      </Suspense>
-      {matchedTiles.length > 0 && (
-        <foreignObject x={posX + 6} y={posY} width={cell.width * cellSize - 12} height={18}>
-          <div>
-            <select
-              value={index}
-              onChange={(event) => setIndex(Number(event.target.value))}
-              style={{
-                fontSize: "10px",
-                background: "rgba(0,0,0,0.6)",
-                color: "#fff",
-                border: "1px solid #666",
-                borderRadius: "2px",
-                height: "16px",
-              }}>
-              {matchedTiles.map((m, i) => (
-                <option key={i} value={i}>
-                  {m.tile.file.split("/").pop()} {m.rotation}° {m.flip ? "F" : ""}
-                </option>
-              ))}
-            </select>
-          </div>
-        </foreignObject>
+    <g onClick={() => onInspect?.(tileResults)} style={{ cursor: "pointer" }}>
+      {isInspected && (
+        <rect
+          x={posX - 6}
+          y={posY - 6}
+          width={12}
+          height={12}
+          fill="none"
+          stroke="yellow"
+          strokeWidth={2}
+          rx={6}
+        />
+      )}
+      {displayMatch && (
+        <>
+          <Suspense fallback={<circle cx={posX} cy={posY} r={4} fill="gray" opacity={0.3} />}>
+            <Minimap
+              tile={displayMatch.tile}
+              x={posX}
+              y={posY}
+              rotation={displayMatch.rotation}
+              flip={displayMatch.flip}
+            />
+          </Suspense>
+        </>
       )}
     </g>
   );
@@ -162,15 +184,16 @@ const Minimap: React.FC<{ tile: any; x: number; y: number; rotation: number; fli
   const height = sprite.bottom - sprite.top;
 
   // Apply flip if needed. Since SVG doesn't have a simple flip, we use transform.
-  const transform = flip
-    ? `translate(${x + width}, ${y}) scale(-1, 1) translate(${-x}, ${-y})`
-    : undefined;
+  // We center the image horizontally around 'x' which is the top corner of the isometric diamond.
+  const imageX = x - width / 2;
+  const imageY = y;
+  const transform = flip ? `translate(${x}, ${y}) scale(-1, 1) translate(${-x}, ${-y})` : undefined;
 
   return (
     <image
       href={`https://i.ggpk.exposed/poe2/minimap/${path}.dds?x=${sprite.left}&y=${sprite.top}&w=${width}&h=${height}`}
-      x={x}
-      y={y}
+      x={imageX}
+      y={imageY}
       width={width}
       height={height}
       transform={transform}

@@ -99,7 +99,7 @@ export const Graph: React.FC<
           {selectedRoomEntry ? (
             <div>
               <p className="mb-1 text-xs text-slate-400">{selectedRoom} preview</p>
-              <Room roomPath={selectedRoomEntry.file} graph={graph} cellSize={44} />
+              <Room roomPath={selectedRoomEntry.file} graph={graph} cellSize={44} detailed />
             </div>
           ) : (
             <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-400/50 bg-slate-950/20 p-6 text-sm text-slate-400">
