@@ -1,14 +1,6 @@
-import { queryOptions } from "@tanstack/react-query";
 import React from "react";
 import { Topology } from "types/world_areas";
 import { Graph } from "components/layout/graph";
-
-export const getLayout = (filename: string) =>
-  queryOptions({
-    queryKey: ["layout", { filename }],
-    queryFn: () =>
-      fetch(`https://repoe-fork.github.io/poe2/${filename}.json`).then((r) => r.json()),
-  });
 
 export const LayoutComponent: React.FC<{
   layout: Topology;

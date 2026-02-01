@@ -1,23 +1,12 @@
 import React, { useState } from "react";
-import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { parseARM } from "lib/arm";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { CandidateMatch, Tile } from "components/layout/tile";
 import { SlotInspector } from "components/layout/slot_info";
+import { getTDT } from "queries/tdt";
+import { getRoom } from "queries/room";
 
 const TRUE = true as const;
 const FALSE = false as const;
-
-export const getRoom = (filename: string) =>
-  queryOptions({
-    queryKey: ["room", { filename }],
-    queryFn: () =>
-      fetch(`https://ggpk.exposed/poe2/${filename}`)
-        .then((r) => {
-          if (!r.ok) throw new Error(`Failed to fetch room: ${r.statusText}`);
-          return r.text();
-        })
-        .then(parseARM),
-  });
 
 export const Room: React.FC<{
   roomPath: string;
@@ -234,6 +223,19 @@ export const RoomJson: React.FC<{ roomPath: string }> = ({ roomPath }) => {
   return (
     <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-slate-200 bg-slate-950 p-2 text-xs text-slate-100">
       {JSON.stringify(arm, undefined, 2)}
+    </pre>
+  );
+};
+
+export const TileJson: React.FC<{ tilePath: string }> = ({ tilePath }) => {
+  const { data: tile, error } = useSuspenseQuery(getTDT(tilePath));
+
+  if (error) return <p className="text-sm text-red-500">Error loading tile JSON</p>;
+  if (!tile) return null;
+
+  return (
+    <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-slate-200 bg-slate-950 p-2 text-xs text-slate-100">
+      {JSON.stringify(tile, undefined, 2)}
     </pre>
   );
 };
