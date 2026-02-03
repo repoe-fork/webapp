@@ -51,20 +51,25 @@ export function AreaDetails({
     navigation.navigate(String(next));
   };
 
-  const addRooms = (rooms: string[], file: string) => {
+  const addRooms = useCallback((rooms: string[], file: string) => {
     setRoomIndex((prev) => {
       const next = { ...prev };
       const order = layoutOrder[file] ?? Number.POSITIVE_INFINITY;
       for (const room of rooms) {
         const existing = next[room];
-        const existingOrder = existing ? layoutOrder[existing] ?? Number.POSITIVE_INFINITY : null;
+        const existingOrder = existing ? (layoutOrder[existing] ?? Number.POSITIVE_INFINITY) : null;
         if (!existing || (existingOrder !== null && order < existingOrder)) {
           next[room] = file;
         }
       }
       return next;
     });
-  };
+  }, []);
+
+  const addNodes = useCallback(
+    (added: Record<string, string[]>) => setNodes((prev) => ({ ...prev, ...added })),
+    [],
+  );
 
   const legendItems = useMemo<ColorLegendItem[]>(() => {
     return Object.keys(nodes)
@@ -89,7 +94,7 @@ export function AreaDetails({
         .removeQuery("roomFile");
       navigation.navigate(String(next));
     },
-    [location, navigation, roomIndex],
+    [location, roomIndex],
   );
 
   const legendState = useMemo(
@@ -116,7 +121,7 @@ export function AreaDetails({
       .setQuery("room", selectedRoom)
       .removeQuery("roomFile");
     navigation.navigate(String(next));
-  }, [location, navigation, roomIndex, selectedGraph, selectedRoom]);
+  }, [location, roomIndex, selectedGraph, selectedRoom]);
 
   return (
     <div className="space-y-4">
@@ -140,7 +145,7 @@ export function AreaDetails({
           key={focusedLayout.id}
           layout={focusedLayout}
           colorMap={colorMap}
-          addNodes={(added) => setNodes((prev) => ({ ...prev, ...added }))}
+          addNodes={addNodes}
           addRooms={addRooms}
         />
       ) : (
@@ -150,7 +155,7 @@ export function AreaDetails({
               key={layout.id}
               file={layout.file}
               colorMap={colorMap}
-              addNodes={(added) => setNodes((prev) => ({ ...prev, ...added }))}
+              addNodes={addNodes}
               addRooms={addRooms}
             />
           ))}
