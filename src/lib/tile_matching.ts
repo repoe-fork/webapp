@@ -15,13 +15,13 @@ export enum TileCorner {
   TopRight = 3,
 }
 
-export interface EdgeIndex {
+export interface Exit {
   real: number;
   virtual: number;
 }
 
 export class TileKey {
-  offsets: EdgeIndex[] = [];
+  exits: Exit[] = [];
   edge_types: (string | null)[] = [];
   ground_types: (string | null)[] = [];
   height: number[] = [];
@@ -30,7 +30,7 @@ export class TileKey {
 
   constructor() {
     for (let i = 0; i < 4; i++) {
-      this.offsets.push({ real: 0, virtual: 0 });
+      this.exits.push({ real: 0, virtual: 0 });
       this.edge_types.push(null);
       this.ground_types.push(null);
       this.height.push(0);
@@ -43,7 +43,7 @@ export class TileKey {
 
     for (let i = 0; i < 4; i++) {
       const side = remap[i];
-      key.offsets[side] = { real: tdt.offsets[i], virtual: tdt.offsets[4 + i] };
+      key.exits[side] = { real: tdt.exits[i], virtual: tdt.exits[4 + i] };
       key.edge_types[side] = tdt.edge_types[i];
       key.ground_types[side] = tdt.ground_types[i];
     }
@@ -81,10 +81,10 @@ export class TileKey {
 
       if (edge.edge && edge.exit !== limitIdx) {
         key.edge_types[side] = edge.edge;
-        key.offsets[side] = { real: edge.exit, virtual: edge.virtual_exit };
+        key.exits[side] = { real: edge.exit, virtual: edge.virtual_exit };
       } else {
         key.edge_types[side] = null;
-        key.offsets[side] = { real: 0, virtual: 0 };
+        key.exits[side] = { real: 0, virtual: 0 };
       }
     }
 
@@ -111,11 +111,11 @@ export class TileKey {
       arr[j] = tmp;
     };
 
-    ret.offsets = this.offsets.map((v) => ({ ...v }));
-    swap(ret.offsets, TileSide.Left, TileSide.Right);
+    ret.exits = this.exits.map((v) => ({ ...v }));
+    swap(ret.exits, TileSide.Left, TileSide.Right);
 
     const flipValue = (side: TileSide, length: number) => {
-      const val = ret.offsets[side];
+      const val = ret.exits[side];
       if (val.real !== length * 3) val.real = length * 3 - 1 - val.real;
       if (val.virtual !== length * 3) val.virtual = length * 3 - 1 - val.virtual;
     };
@@ -168,7 +168,7 @@ export class TileKey {
       return result;
     };
 
-    ret.offsets = rotateArray(this.offsets);
+    ret.exits = rotateArray(this.exits);
     ret.edge_types = rotateArray(this.edge_types);
     ret.ground_types = rotateArray(this.ground_types);
     ret.height = rotateArray(this.height);
@@ -207,8 +207,8 @@ export function fitsInSlot(tile: TileKey, slot: TileKey): SlotFitResult {
       if (
         !eitherWild &&
         (tileEt !== slotEt ||
-          tile.offsets[i].real !== slot.offsets[i].real ||
-          tile.offsets[i].virtual !== slot.offsets[i].virtual)
+          tile.exits[i].real !== slot.exits[i].real ||
+          tile.exits[i].virtual !== slot.exits[i].virtual)
       ) {
         reasons.push(`Edge index mismatch on side ${i}`);
       }

@@ -12,7 +12,7 @@ export type TDTActual = {
   strings: string[];
   edge_types: (string | null)[];
   ground_types: (string | null)[];
-  offsets: number[];
+  exits: number[];
   dim: { x: number; y: number };
   heights: number[];
 };
@@ -96,9 +96,9 @@ export function parseTDT(buffer: ArrayBuffer): TDTFile {
   readUint8();
   readUint8();
 
-  const offsets = [];
+  const exits = [];
   for (let i = 0; i < 8; i++) {
-    offsets.push(readUint8());
+    exits.push(readUint8());
   }
 
   let flags = 0;
@@ -162,7 +162,7 @@ export function parseTDT(buffer: ArrayBuffer): TDTFile {
     strings: stringsRaw.split("\u0000"),
     edge_types,
     ground_types,
-    offsets,
+    exits,
     dim,
     heights,
   };

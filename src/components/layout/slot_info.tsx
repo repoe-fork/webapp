@@ -30,7 +30,7 @@ const CriteriaList: React.FC<{
               <span>{SideNames[i]}:</span>
               <span className="truncate ml-2 text-right">
                 {et ? et.split("/").pop() : "NONE"}{" "}
-                {et && `(${keyInfo.offsets[i].real}, ${keyInfo.offsets[i].virtual})`}
+                {et && `(${keyInfo.exits[i].real}, ${keyInfo.exits[i].virtual})`}
               </span>
             </div>
           ))}
