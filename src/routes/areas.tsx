@@ -23,7 +23,7 @@ export function AreasPage() {
       <div className="flex-1">
         {selectedArea ? <AreaDetails area={selectedArea} onLegendChange={setLegendState} /> : null}
       </div>
-      <aside className="w-full rounded-lg border border-slate-200 bg-white p-3 shadow-sm lg:w-72">
+      <aside className="w-full shrink-0 rounded-lg border border-slate-200 bg-white p-3 shadow-sm lg:w-fit lg:min-w-72">
         {legendState ? (
           <div className="max-h-[75vh] overflow-auto">
             <ColorLegend

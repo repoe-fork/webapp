@@ -16,7 +16,7 @@ export const ColorLegend: React.FC<{
         <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
         <span className="text-xs text-slate-500">{items.length} entries</span>
       </div>
-      <ul className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <ul className="mt-3 grid grid-cols-1 gap-2">
         {items.map((item) => (
           <li key={item.label}>
             <button
@@ -27,7 +27,7 @@ export const ColorLegend: React.FC<{
                 className="h-3 w-3 shrink-0 rounded-sm ring-1 ring-slate-200"
                 style={{ backgroundColor: item.color }}
               />
-              <span className="truncate">{item.label}</span>
+              <span className="whitespace-nowrap">{item.label}</span>
             </button>
           </li>
         ))}
