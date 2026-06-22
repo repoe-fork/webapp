@@ -149,7 +149,7 @@ export function AreaDetails({
           addRooms={addRooms}
         />
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
           {layouts.map((layout) => (
             <GraphOverviewCard
               key={layout.id}
