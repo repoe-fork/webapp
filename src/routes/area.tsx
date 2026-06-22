@@ -128,7 +128,7 @@ export function AreaDetails({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="text-xl font-semibold text-slate-900">{area.name}</h3>
-          <p className="text-sm text-slate-500">
+          <p className="truncate text-sm text-slate-500" title={selectedRoom ? `focused room: ${selectedRoom}` : undefined}>
             {layouts.length} graph{layouts.length === 1 ? "" : "s"}
             {selectedRoom ? ` · focused room: ${selectedRoom}` : ""}
           </p>
@@ -149,7 +149,7 @@ export function AreaDetails({
           addRooms={addRooms}
         />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4">
           {layouts.map((layout) => (
             <GraphOverviewCard
               key={layout.id}

@@ -66,8 +66,10 @@ export const Graph: React.FC<
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-4 lg:flex-row">
-        <div className="flex-1">
-          <svg viewBox={viewBox} className="w-full rounded-md border border-slate-200 bg-slate-900">
+        <div className="flex-[2] overflow-hidden">
+          <svg
+            viewBox={viewBox}
+            className="mx-auto block h-auto max-h-[80vh] w-auto max-w-full rounded-md border border-slate-200 bg-slate-900">
             {graph.edges.map((edge: Edge) => {
               return <Edge {...edge} graph={graph} scale={scale} key={`${edge.from}-${edge.to}`} />;
             })}

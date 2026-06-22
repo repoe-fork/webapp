@@ -58,44 +58,48 @@ export const GraphOverviewCard: React.FC<{
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm font-semibold text-slate-900" title={file}>
-            {file.split("/").pop()}
-          </p>
-          <p className="text-xs text-slate-500">
-            {roomCount} rooms · {graph.nodes.length} nodes · {graph.edges.length} edges
-            {subgraphCount ? ` · ${subgraphCount} subgraphs` : ""}
-          </p>
+      <div className="flex flex-col gap-4 lg:flex-row">
+        <div className="flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-sm font-semibold text-slate-900" title={file}>
+                {file.split("/").pop()}
+              </p>
+              <p className="text-xs text-slate-500">
+                {roomCount} rooms · {graph.nodes.length} nodes · {graph.edges.length} edges
+                {subgraphCount ? ` · ${subgraphCount} subgraphs` : ""}
+              </p>
+            </div>
+            <Button variant="outline" onClick={setFocus}>
+              Focus
+            </Button>
+          </div>
+          <div className="mt-3 rounded-md border border-slate-200 bg-slate-900 p-2">
+            <svg viewBox={viewBox} className="mx-auto block h-auto max-h-[60vh] w-auto max-w-full">
+              {graph.edges.map((edge: Edge) => {
+                return <Edge {...edge} graph={graph} scale={scale} key={`${edge.from}-${edge.to}`} />;
+              })}
+              {graph.nodes.map(({ x, y, room, strings }: any, i: number) => {
+                const fill = colorMap[roomKey(room, strings)]?.color || "gray";
+                return (
+                  <circle
+                    key={i}
+                    cx={x}
+                    cy={y}
+                    r={(room ? 4 : 3) * scale}
+                    fill={fill}
+                    onClick={() => room && setRoom(room)}
+                    style={{ cursor: room ? "pointer" : "default" }}>
+                    <title>
+                      {room || UNTAGGED_NODE}
+                      {strings?.length ? '\n"' + strings.join('"\n"') + '"' : ""}
+                    </title>
+                  </circle>
+                );
+              })}
+            </svg>
+          </div>
         </div>
-        <Button variant="outline" onClick={setFocus}>
-          Focus
-        </Button>
-      </div>
-      <div className="mt-3 rounded-md border border-slate-200 bg-slate-900 p-2">
-        <svg viewBox={viewBox} className="w-full">
-          {graph.edges.map((edge: Edge) => {
-            return <Edge {...edge} graph={graph} scale={scale} key={`${edge.from}-${edge.to}`} />;
-          })}
-          {graph.nodes.map(({ x, y, room, strings }: any, i: number) => {
-            const fill = colorMap[roomKey(room, strings)]?.color || "gray";
-            return (
-              <circle
-                key={i}
-                cx={x}
-                cy={y}
-                r={(room ? 4 : 3) * scale}
-                fill={fill}
-                onClick={() => room && setRoom(room)}
-                style={{ cursor: room ? "pointer" : "default" }}>
-                <title>
-                  {room || UNTAGGED_NODE}
-                  {strings?.length ? '\n"' + strings.join('"\n"') + '"' : ""}
-                </title>
-              </circle>
-            );
-          })}
-        </svg>
       </div>
     </div>
   );

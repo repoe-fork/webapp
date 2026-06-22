@@ -27,7 +27,9 @@ export const ColorLegend: React.FC<{
                 className="h-3 w-3 shrink-0 rounded-sm ring-1 ring-slate-200"
                 style={{ backgroundColor: item.color }}
               />
-              <span className="whitespace-nowrap">{item.label}</span>
+              <span className="truncate" title={item.label}>
+                {item.label}
+              </span>
             </button>
           </li>
         ))}

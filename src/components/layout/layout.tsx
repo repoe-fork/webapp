@@ -10,7 +10,9 @@ export const LayoutComponent: React.FC<{
 }> = ({ layout, colorMap, addNodes, addRooms }) => {
   return (
     <div>
-      <h4 className="mb-2 text-sm font-semibold text-slate-900">{layout.file}</h4>
+      <h4 className="mb-2 truncate text-sm font-semibold text-slate-900" title={layout.file}>
+        {layout.file}
+      </h4>
       <Graph layout={layout} colorMap={colorMap} addNodes={addNodes} addRooms={addRooms} />
     </div>
   );
