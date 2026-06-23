@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo } from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Edge } from "components/layout/edge";
 import { Rooms } from "components/layout/rooms";
 import { Room, RoomJson, TileJson } from "components/layout/room";
@@ -16,7 +16,7 @@ export const Graph: React.FC<
     addRooms?: (rooms: string[], file: string) => void;
   }
 > = ({ layout, file = layout?.file, colorMap, addNodes, addRooms }) => {
-  const graph = useSuspenseQuery(getLayout(file!)).data;
+  const { data: graph, isPending, error } = useQuery(getLayout(file!));
   const navigation = useNavigate();
   const location = useLocation();
   const selectedRoom = useQueryParam("room");
@@ -38,20 +38,20 @@ export const Graph: React.FC<
     [location, navigation, file],
   );
   const [viewBox, scale, names] = useMemo(() => {
+    if (!graph) return ["0 0 0 0", 1, {}];
     return processGraph(graph.nodes);
-  }, [graph.nodes]);
-  useEffect(() => void addNodes(names), [names, addNodes]);
+  }, [graph?.nodes]);
   useEffect(() => {
-    if (!addRooms || !graph.room_set) return;
+    if (names) addNodes(names);
+  }, [names, addNodes]);
+  useEffect(() => {
+    if (!addRooms || !graph?.room_set) return;
     const rooms = graph.room_set.map((room: any) => room.room_tag).filter((room: string) => room);
     addRooms(rooms, file!);
-  }, [addRooms, graph.room_set, file]);
-  if (!graph.nodes?.length) {
-    return <>No data</>;
-  }
+  }, [addRooms, graph?.room_set, file]);
 
   const roomEntries = selectedRoom
-    ? (graph.room_set || []).filter((room: any) => room.room_tag === selectedRoom)
+    ? (graph?.room_set || []).filter((room: any) => room.room_tag === selectedRoom)
     : [];
   const selectedRoomEntry =
     roomEntries.find((room: any) => room.file === selectedRoomFile) || roomEntries[0] || null;
@@ -62,6 +62,26 @@ export const Graph: React.FC<
     const next = location.clone().setQuery("roomFile", selectedRoomEntry.file);
     navigation.navigate(String(next), { history: "replace" });
   }, [location, navigation, selectedRoom, selectedRoomEntry, selectedRoomFile]);
+
+  if (isPending) {
+    return <div className="p-4 animate-pulse bg-slate-100 rounded-md">Loading graph...</div>;
+  }
+
+  if (error || !graph) {
+    return (
+      <div className="rounded-md border border-red-200 bg-red-50 p-4 text-red-900">
+        <h3 className="text-sm font-bold">Error loading graph</h3>
+        <p className="text-xs text-red-700 mt-1">
+          Could not fetch layout data for <code>{file}</code>. It might be missing or the server
+          might be down.
+        </p>
+      </div>
+    );
+  }
+
+  if (!graph.nodes?.length) {
+    return <>No data</>;
+  }
 
   return (
     <div className="space-y-4">
@@ -98,7 +118,9 @@ export const Graph: React.FC<
         <div className="flex-1">
           {selectedRoomEntry ? (
             <div>
-              <p className="mb-1 text-xs text-slate-400">{selectedRoom} preview (work in progress)</p>
+              <p className="mb-1 text-xs text-slate-400">
+                {selectedRoom} preview (work in progress)
+              </p>
               <Room roomPath={selectedRoomEntry.file} graph={graph} cellSize={44} detailed />
             </div>
           ) : (

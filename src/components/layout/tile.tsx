@@ -37,8 +37,9 @@ export const Tile: React.FC<{
 
   const tileCandidates = useMemo(
     () =>
-      graph.tile_set?.filter(({ tile_tag }: any) => !cell.tile_tag || tile_tag === cell.tile_tag) ||
-      [],
+      [...new Set(graph.tile_set || [])].filter(
+        ({ tile_tag }: any) => !cell.tile_tag || tile_tag === cell.tile_tag,
+      ) || [],
     [cell.tile_tag, graph.tile_set],
   );
 
