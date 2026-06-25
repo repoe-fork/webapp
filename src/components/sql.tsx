@@ -1,5 +1,5 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import initSqlJs, { Database } from "fts5-sql-bundle";
+import { initSqlJs, Database } from "fts5-sql-bundle";
 // @ts-ignore
 import wasm from "fts5-sql-bundle/dist/sql-wasm.wasm?url";
 import {
