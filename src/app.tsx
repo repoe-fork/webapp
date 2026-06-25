@@ -152,11 +152,11 @@ export function App() {
     navigation?.navigate(String(dest), { history: "replace" });
   }, [navigation, location]);
 
-  const homeHref = location.query("").setQuery({ tab: "home", area: null, game: null }).href();
-  const areasHref = location.query("").setQuery({ tab: "areas", area: null, game: null }).href();
-  const sqlPoe1Href = location.query("").setQuery({ tab: "sql", game: "poe1", area: null }).href();
-  const sqlPoe2Href = location.query("").setQuery({ tab: "sql", game: "poe2", area: null }).href();
-  const aboutHref = location.query("").setQuery({ tab: "about", area: null, game: null }).href();
+  const homeHref = location.query("").setQuery({ tab: "home" }).href();
+  const areasHref = location.query("").setQuery({ tab: "areas" }).href();
+  const sqlPoe1Href = location.query("").setQuery({ tab: "sql", game: "poe1" }).href();
+  const sqlPoe2Href = location.query("").setQuery({ tab: "sql", game: "poe2" }).href();
+  const aboutHref = location.query("").setQuery({ tab: "about" }).href();
 
   return (
     <>
