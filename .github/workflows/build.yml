@@ -23,10 +23,23 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v6
-      - run: |
-          ./generate-types.sh
-          npm ci
-          npm run build
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - name: install dependencies
+        run: npm ci
+      - name: generate types
+        run: ./generate-types.sh
+      - name: run unit tests
+        run: npm run test
+      - name: install playwright browsers
+        run: npx playwright install --with-deps
+      - name: run e2e tests
+        run: npm run e2e
+      - name: build app
+        run: npm run build
       - name: upload pages
         uses: actions/upload-pages-artifact@v5
         with:
