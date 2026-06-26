@@ -26,7 +26,7 @@ const NavLink = ({ label, href, active }: { label: string; href: string; active:
 
 const GameToggle = () => {
   const location = useLocation();
-  const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
+  const game = useQueryParam("game");
 
   const toggleHref = location.clone()
     .setQuery("game", game === "poe2" ? "poe1" : "poe2")
@@ -180,7 +180,7 @@ export function App() {
   const params = useQueryParams(["tab", "game"]);
 
   const tab = (["areas", "sql", "about", "home"].find((p) => p === params.tab) || "home") as Tab;
-  const game = params.game === "poe2" ? "poe2" : "poe1";
+  const game = params.game === "poe1" ? "poe1" : "poe2";
 
   const navigation = useNavigate();
   useEffect(() => {
