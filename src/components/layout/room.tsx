@@ -4,6 +4,7 @@ import { CandidateMatch, Tile } from "components/layout/tile";
 import { SlotInspector } from "components/layout/slot_info";
 import { getTDT } from "queries/tdt";
 import { getRoom } from "queries/room";
+import { useQueryParam } from "use-navigation-api";
 
 const TRUE = true as const;
 const FALSE = false as const;
@@ -16,7 +17,8 @@ export const Room: React.FC<{
   detailed?: boolean;
   selected?: boolean;
 }> = ({ roomPath, graph, cellSize = 50, orthogonal, detailed, selected }) => {
-  const { data: arm, error } = useSuspenseQuery(getRoom(roomPath));
+  const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
+  const { data: arm, error } = useSuspenseQuery(getRoom(roomPath, game));
   const [inspected, setInspected] = useState<{
     x: number;
     y: number;
@@ -215,7 +217,8 @@ export const Room: React.FC<{
 };
 
 export const RoomJson: React.FC<{ roomPath: string }> = ({ roomPath }) => {
-  const { data: arm, error } = useSuspenseQuery(getRoom(roomPath));
+  const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
+  const { data: arm, error } = useSuspenseQuery(getRoom(roomPath, game));
 
   if (error) return <p className="text-sm text-red-500">Error loading room JSON</p>;
   if (!arm) return null;
@@ -228,7 +231,8 @@ export const RoomJson: React.FC<{ roomPath: string }> = ({ roomPath }) => {
 };
 
 export const TileJson: React.FC<{ tilePath: string }> = ({ tilePath }) => {
-  const { data: tile, error } = useSuspenseQuery(getTDT(tilePath));
+  const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
+  const { data: tile, error } = useSuspenseQuery(getTDT(tilePath, game));
 
   if (error) return <p className="text-sm text-red-500">Error loading tile JSON</p>;
   if (!tile) return null;

@@ -1,7 +1,7 @@
 import { test, expect, waitForCascadingLoads } from "./fixtures";
 
 test("cascading load verification", async ({ page }) => {
-  const url = "/webapp?tab=areas&area=G1_2&game&graph=Metadata%2FTerrain%2FGallows%2FAct1%2F1_2%2FGraphs%2Ffelling_N_S_E.tgr&room=boss&roomFile=Metadata%2FTerrain%2FGallows%2FAct1%2F1_2%2FRooms%2FUnique%2Fboss_hagwitch_1.arm";
+  const url = "/webapp?tab=areas&area=G1_2&game=poe2&graph=Metadata%2FTerrain%2FGallows%2FAct1%2F1_2%2FGraphs%2Ffelling_N_S_E.tgr&room=boss&roomFile=Metadata%2FTerrain%2FGallows%2FAct1%2F1_2%2FRooms%2FUnique%2Fboss_hagwitch_1.arm";
   
   await page.goto(url);
   

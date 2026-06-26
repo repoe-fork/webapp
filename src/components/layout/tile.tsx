@@ -43,8 +43,9 @@ export const Tile: React.FC<{
     [cell.tile_tag, graph.tile_set],
   );
 
+  const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
   const tdtQueries = useQueries({
-    queries: tileCandidates.map((tile: any) => getTDT(tile.file)),
+    queries: tileCandidates.map((tile: any) => getTDT(tile.file, game)),
   });
 
   const tileResults = useMemo(() => {

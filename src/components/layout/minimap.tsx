@@ -1,6 +1,7 @@
 import React from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getSpriteSheet } from "lib/minimap";
+import { useQueryParam } from "use-navigation-api";
 
 export const Minimap: React.FC<{
   tile: any;
@@ -9,8 +10,9 @@ export const Minimap: React.FC<{
   rotation: number;
   flip: boolean;
 }> = ({ tile, x, y, rotation, flip }) => {
+  const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
   const path = tile.file.substring(0, tile.file.lastIndexOf("/")).replaceAll(/\W/g, "_");
-  const { data: spriteSheet } = useSuspenseQuery(getSpriteSheet(path + ".mtp"));
+  const { data: spriteSheet } = useSuspenseQuery(getSpriteSheet(path + ".mtp", game));
 
   if (!spriteSheet) return null;
 
@@ -38,7 +40,7 @@ export const Minimap: React.FC<{
 
   return (
     <image
-      href={`https://i.ggpk.exposed/poe2/minimap/${path}.dds?x=${sprite.left}&y=${sprite.top}&w=${width}&h=${height}`}
+      href={`https://i.ggpk.exposed/${game === "poe2" ? "poe2" : "poe1"}/minimap/${path}.dds?x=${sprite.left}&y=${sprite.top}&w=${width}&h=${height}`}
       x={imageX}
       y={imageY}
       width={width}
