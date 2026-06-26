@@ -6,15 +6,17 @@ import React, { useState } from "react";
 import { ColorLegend } from "components/layout/color-legend";
 import { Accordion } from "components/ui/accordion";
 
-export const getAreas = queryOptions({
-  queryKey: ["areas"],
+export const getAreas = (game: string, version?: string) => queryOptions({
+  queryKey: ["areas", { game, version }],
   queryFn: (): Promise<Record<string, Area>> =>
-    fetch("https://repoe-fork.github.io/poe2/world_areas.json").then((r) => r.json()),
+    fetch(`https://repoe-fork.github.io/${game === "poe2" ? (version ? `poe2-${version}/` : "poe2/") : ""}world_areas.json`).then((r) => r.json()),
 });
 
 export function AreasPage() {
   const selectedAreaId = useQueryParam("area");
-  const query = useSuspenseQuery(getAreas);
+  const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
+  const version = useQueryParam("version");
+  const query = useSuspenseQuery(getAreas(game, version));
   const areas = query.data;
   const selectedArea = selectedAreaId ? areas[selectedAreaId] : null;
   const [legendState, setLegendState] = useState<LegendState | null>(null);

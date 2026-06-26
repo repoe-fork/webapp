@@ -24,8 +24,41 @@ const NavLink = ({ label, href, active }: { label: string; href: string; active:
   </a>
 );
 
+const GameToggle = () => {
+  const location = useLocation();
+  const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
+
+  const toggleHref = location.clone()
+    .setQuery("game", game === "poe2" ? "poe1" : "poe2")
+    .removeQuery("area")
+    .removeQuery("graph")
+    .removeQuery("room")
+    .href();
+
+  return (
+    <div className="flex items-center rounded-full border border-slate-200 bg-slate-50 p-1">
+      <a
+        href={location.clone().setQuery("game", "poe1").removeQuery("area").removeQuery("graph").removeQuery("room").href()}
+        className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition-colors ${
+          game === "poe1" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+        }`}>
+        PoE 1
+      </a>
+      <a
+        href={location.clone().setQuery("game", "poe2").removeQuery("area").removeQuery("graph").removeQuery("room").href()}
+        className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition-colors ${
+          game === "poe2" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+        }`}>
+        PoE 2
+      </a>
+    </div>
+  );
+};
+
 const AreaCombobox = () => {
-  const { data: areas } = useSuspenseQuery(getAreas);
+  const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
+  const version = useQueryParam("version");
+  const { data: areas } = useSuspenseQuery(getAreas(game, version));
   const navigation = useNavigate();
   const location = useLocation();
   const selectedAreaId = useQueryParam("area");
@@ -67,14 +100,32 @@ const AreaCombobox = () => {
 
   return (
     <div className="relative min-w-[220px]">
-      <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Area</label>
-      <div className="mt-1 flex items-center gap-2">
+      <div className="flex items-center gap-2">
+        {game === "poe2" && (
+          <label className="flex items-center gap-1.5 whitespace-nowrap text-sm text-slate-600">
+            <input
+              type="checkbox"
+              className="rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+              checked={version === "0.4"}
+              onChange={(e) => {
+                const next = location.clone();
+                if (e.target.checked) {
+                  next.setQuery("version", "0.4");
+                } else {
+                  next.removeQuery("version");
+                }
+                navigation.navigate(String(next));
+              }}
+            />
+            pre-0.5
+          </label>
+        )}
         <input
           role="combobox"
           aria-expanded={open}
           aria-controls="area-combobox-list"
-          className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
-          placeholder="Search areas..."
+          className="w-full rounded-md border border-slate-200 px-3 py-1 text-sm text-slate-900 shadow-sm focus:border-slate-400 focus:outline-none"
+          placeholder={`Search ${game === "poe2" ? "PoE 2" : "PoE 1"} areas...`}
           value={search}
           onChange={(event) => {
             setSearch(event.target.value);
@@ -152,30 +203,21 @@ export function App() {
     navigation?.navigate(String(dest), { history: "replace" });
   }, [navigation, location]);
 
-  const homeHref = location.query("").setQuery({ tab: "home" }).href();
-  const areasHref = location.query("").setQuery({ tab: "areas" }).href();
-  const sqlPoe1Href = location.query("").setQuery({ tab: "sql", game: "poe1" }).href();
-  const sqlPoe2Href = location.query("").setQuery({ tab: "sql", game: "poe2" }).href();
-  const aboutHref = location.query("").setQuery({ tab: "about" }).href();
+  const homeHref = location.query("").setQuery({ tab: "home", game }).href();
+  const areasHref = location.query("").setQuery({ tab: "areas", game }).href();
+  const sqlHref = location.query("").setQuery({ tab: "sql", game }).href();
+  const aboutHref = location.query("").setQuery({ tab: "about", game }).href();
 
   return (
     <>
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-2">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-2">
           <div className="text-lg font-semibold tracking-tight text-slate-900">poe webapp</div>
+          <GameToggle />
           <nav className="flex flex-wrap gap-2">
             <NavLink label="Home" href={homeHref} active={tab === "home"} />
             <NavLink label="Areas" href={areasHref} active={tab === "areas"} />
-            <NavLink
-              label="poe1 sqlite"
-              href={sqlPoe1Href}
-              active={tab === "sql" && game !== "poe2"}
-            />
-            <NavLink
-              label="poe2 sqlite"
-              href={sqlPoe2Href}
-              active={tab === "sql" && game === "poe2"}
-            />
+            <NavLink label="SQL" href={sqlHref} active={tab === "sql"} />
             <NavLink label="About" href={aboutHref} active={tab === "about"} />
           </nav>
           <div className="ml-auto">

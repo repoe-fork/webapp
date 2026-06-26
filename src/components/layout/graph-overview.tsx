@@ -6,13 +6,17 @@ import { useLocation, useNavigate } from "use-navigation-api";
 import { processGraph, roomKey, UNTAGGED_NODE } from "lib/graph";
 import { getLayout } from "queries/layout";
 
+import { useQueryParam } from "use-navigation-api";
+
 export const GraphOverviewCard: React.FC<{
   file: string;
   addNodes: (names: Record<string, string[]>) => void;
   colorMap: Record<string, { color: string; strings: string[] }>;
   addRooms?: (rooms: string[], file: string) => void;
 }> = ({ file, addNodes, colorMap, addRooms }) => {
-  const { data: graph, isPending, error } = useQuery(getLayout(file));
+  const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
+  const version = useQueryParam("version");
+  const { data: graph, isPending, error } = useQuery(getLayout(file, game, version));
   const navigation = useNavigate();
   const location = useLocation();
   const [viewBox, scale, names] = useMemo(() => {

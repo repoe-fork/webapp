@@ -16,7 +16,9 @@ export const Graph: React.FC<
     addRooms?: (rooms: string[], file: string) => void;
   }
 > = ({ layout, file = layout?.file, colorMap, addNodes, addRooms }) => {
-  const { data: graph, isPending, error } = useQuery(getLayout(file!));
+  const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
+  const version = useQueryParam("version");
+  const { data: graph, isPending, error } = useQuery(getLayout(file!, game, version));
   const navigation = useNavigate();
   const location = useLocation();
   const selectedRoom = useQueryParam("room");
