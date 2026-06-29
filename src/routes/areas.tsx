@@ -8,11 +8,14 @@ import { Accordion } from "components/ui/accordion";
 import { useAtom } from "jotai";
 import { headerHeight } from "../state/headerHeight";
 
-export const getAreas = (game: string, version?: string) => queryOptions({
-  queryKey: ["areas", { game, version }],
-  queryFn: (): Promise<Record<string, Area>> =>
-    fetch(`https://repoe-fork.github.io/${game === "poe2" ? (version ? `poe2-${version}/` : "poe2/") : ""}world_areas.json`).then((r) => r.json()),
-});
+export const getAreas = (game: string, version?: string) =>
+  queryOptions({
+    queryKey: ["areas", { game, version }],
+    queryFn: (): Promise<Record<string, Area>> =>
+      fetch(
+        `https://repoe-fork.github.io/${game === "poe2" ? (version ? `poe2-${version}/` : "poe2/") : ""}world_areas.json`,
+      ).then((r) => r.json()),
+  });
 
 export function AreasPage() {
   const [top] = useAtom(headerHeight);
@@ -30,8 +33,9 @@ export function AreasPage() {
         {legendState ? (
           <>
             {/* Mobile collapsible legend */}
-            <div className="fixed left-0 right-0 z-20 bg-slate-50/95 backdrop-blur-sm px-4 py-2 lg:hidden"
-                 style={{top}}>
+            <div
+              className="fixed left-0 right-0 z-20 bg-slate-50/95 backdrop-blur-sm px-4 py-2 lg:hidden"
+              style={{ top }}>
               <Accordion title={legendState.title}>
                 <div className="max-h-[60vh] overflow-auto">
                   <ColorLegend

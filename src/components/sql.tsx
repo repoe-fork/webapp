@@ -23,7 +23,7 @@ export const getDatabase = (url: string) =>
     queryFn: (): Promise<Database> =>
       fetch(url, { cache: "default" })
         .then((r) => r.arrayBuffer())
-        .then((b) => SQL.then((({Database}) => new Database(new Uint8Array(b))))),
+        .then((b) => SQL.then(({ Database }) => new Database(new Uint8Array(b)))),
   });
 
 type SqlValue = number | string | Uint8Array | null;
@@ -182,7 +182,9 @@ export const SQLViewer: FC<
       <div className="space-y-4">
         {children}
         {err ? <Alert variant="destructive">{String(err)}</Alert> : null}
-        {res?.map((r, i) => <ResultTable key={i} result={r} />)}
+        {res?.map((r, i) => (
+          <ResultTable key={i} result={r} />
+        ))}
       </div>
 
       {/* Pagination controls */}

@@ -20,8 +20,8 @@ export const Edge: React.FC<{ graph: any; scale: number } & Edge> = ({
   const start = graph.nodes[from];
   const end = graph.nodes[to];
 
-  if (!start) console.log("no from node", from)
-  if (!end) console.log("no to node", to)
+  if (!start) console.log("no from node", from);
+  if (!end) console.log("no to node", to);
   if (!start || !end) return null;
 
   return (

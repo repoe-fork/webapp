@@ -1,3 +1,3 @@
-import {atom } from "jotai"
+import { atom } from "jotai";
 
-export const headerHeight = atom(50)
+export const headerHeight = atom(50);

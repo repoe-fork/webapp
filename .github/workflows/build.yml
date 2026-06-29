@@ -3,7 +3,7 @@ name: build and deploy
 on:
   workflow_dispatch:
   push:
-    branches: [ "develop" ]
+    branches: ["develop"]
 
 permissions:
   contents: read
@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 26
-          cache: 'npm'
+          cache: "npm"
       - name: install dependencies
         run: npm ci
       - name: generate types

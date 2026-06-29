@@ -35,17 +35,22 @@
 A Playwright E2E testing setup is available to quickly verify changes.
 
 ### Running Tests
+
 - `npm run e2e`: Run all E2E tests.
 - `npm run e2e -- tests/e2e/some_test.spec.ts`: Run a specific test.
 - `npm run e2e:ui`: Open the Playwright UI to interactively run and debug tests.
 
 ### Network Caching
+
 To speed up tests and avoid being blocked by rate limits or connectivity issues with external data sources (`ggpk.exposed`, etc.), a caching fixture is provided in `tests/e2e/fixtures.ts`.
+
 - It caches GET requests to known data hosts in the `.playwright-cache` directory.
 - When writing new tests, import `test` and `expect` from `./fixtures` instead of `@playwright/test`.
 
 ### Verification Tips
+
 When testing pages with dynamic content (like rooms and tiles) that involve cascading loads, use the `waitForCascadingLoads` helper from `fixtures.ts`:
+
 ```typescript
 import { test, expect, waitForCascadingLoads } from "./fixtures";
 
@@ -55,4 +60,5 @@ test("example", async ({ page }) => {
   // assertions here
 });
 ```
+
 This helper waits for the network to be idle AND for any "Loading..." placeholders to disappear, handling cases where one request triggers a UI update that then triggers another request.

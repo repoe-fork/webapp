@@ -13,7 +13,7 @@ import { AboutPage } from "routes/about";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useAtom } from "jotai";
 import { headerHeight } from "./state/headerHeight";
-import ResizeObserver from 'rc-resize-observer';
+import ResizeObserver from "rc-resize-observer";
 
 type Tab = "home" | "areas" | "sql" | "about";
 
@@ -31,7 +31,8 @@ const GameToggle = () => {
   const location = useLocation();
   const game = useQueryParam("game");
 
-  const toggleHref = location.clone()
+  const toggleHref = location
+    .clone()
     .setQuery("game", game === "poe2" ? "poe1" : "poe2")
     .removeQuery("area")
     .removeQuery("graph")
@@ -41,16 +42,32 @@ const GameToggle = () => {
   return (
     <div className="flex items-center rounded-full border border-slate-200 bg-slate-50 p-1">
       <a
-        href={location.clone().setQuery("game", "poe1").removeQuery("area").removeQuery("graph").removeQuery("room").href()}
+        href={location
+          .clone()
+          .setQuery("game", "poe1")
+          .removeQuery("area")
+          .removeQuery("graph")
+          .removeQuery("room")
+          .href()}
         className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition-colors ${
-          game === "poe1" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+          game === "poe1"
+            ? "bg-white text-slate-900 shadow-sm"
+            : "text-slate-500 hover:text-slate-700"
         }`}>
         PoE 1
       </a>
       <a
-        href={location.clone().setQuery("game", "poe2").removeQuery("area").removeQuery("graph").removeQuery("room").href()}
+        href={location
+          .clone()
+          .setQuery("game", "poe2")
+          .removeQuery("area")
+          .removeQuery("graph")
+          .removeQuery("room")
+          .href()}
         className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition-colors ${
-          game === "poe2" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"
+          game === "poe2"
+            ? "bg-white text-slate-900 shadow-sm"
+            : "text-slate-500 hover:text-slate-700"
         }`}>
         PoE 2
       </a>
@@ -182,7 +199,7 @@ export function App() {
   const location = useLocation();
   const params = useQueryParams(["tab", "game"]);
 
-  const [,setHeaderHeight] = useAtom(headerHeight);
+  const [, setHeaderHeight] = useAtom(headerHeight);
 
   const tab = (["areas", "sql", "about", "home"].find((p) => p === params.tab) || "home") as Tab;
   const game = params.game === "poe1" ? "poe1" : "poe2";
@@ -215,24 +232,24 @@ export function App() {
 
   return (
     <>
-      <ResizeObserver onResize={({height}) => setHeaderHeight(height)}>
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-2">
-          <div className="text-lg font-semibold tracking-tight text-slate-900">poe webapp</div>
-          <GameToggle />
-          <nav className="flex flex-wrap gap-2">
-            <NavLink label="Home" href={homeHref} active={tab === "home"} />
-            <NavLink label="Areas" href={areasHref} active={tab === "areas"} />
-            <NavLink label="SQL" href={sqlHref} active={tab === "sql"} />
-            <NavLink label="About" href={aboutHref} active={tab === "about"} />
-          </nav>
-          <div className="ml-auto">
-            <Suspense fallback={<div className="text-xs text-slate-400">Loading areas...</div>}>
-              {tab === "areas" ? <AreaCombobox /> : null}
-            </Suspense>
+      <ResizeObserver onResize={({ height }) => setHeaderHeight(height)}>
+        <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-2">
+            <div className="text-lg font-semibold tracking-tight text-slate-900">poe webapp</div>
+            <GameToggle />
+            <nav className="flex flex-wrap gap-2">
+              <NavLink label="Home" href={homeHref} active={tab === "home"} />
+              <NavLink label="Areas" href={areasHref} active={tab === "areas"} />
+              <NavLink label="SQL" href={sqlHref} active={tab === "sql"} />
+              <NavLink label="About" href={aboutHref} active={tab === "about"} />
+            </nav>
+            <div className="ml-auto">
+              <Suspense fallback={<div className="text-xs text-slate-400">Loading areas...</div>}>
+                {tab === "areas" ? <AreaCombobox /> : null}
+              </Suspense>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
       </ResizeObserver>
       <main className="mx-auto max-w-6xl px-4 py-4">
         <Suspense fallback={<div>Loading...</div>}>

@@ -44,7 +44,10 @@ const cachePathsFor = (url: string) => {
 const readCache = async (url: string): Promise<CachedResponse | null> => {
   const { metaPath, bodyPath } = cachePathsFor(url);
   try {
-    const [metaRaw, body] = await Promise.all([fs.readFile(metaPath, "utf8"), fs.readFile(bodyPath)]);
+    const [metaRaw, body] = await Promise.all([
+      fs.readFile(metaPath, "utf8"),
+      fs.readFile(bodyPath),
+    ]);
     const meta = JSON.parse(metaRaw) as { status: number; headers: Record<string, string> };
     return { status: meta.status, headers: meta.headers, body };
   } catch {

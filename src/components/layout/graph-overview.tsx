@@ -114,7 +114,9 @@ export const GraphOverviewCard: React.FC<{
           <div className="mt-3 rounded-md border border-slate-200 bg-slate-900 p-2">
             <svg viewBox={viewBox} className="mx-auto block h-auto max-h-[60vh] w-auto max-w-full">
               {graph.edges.map((edge: Edge) => {
-                return <Edge {...edge} graph={graph} scale={scale} key={`${edge.from}-${edge.to}`} />;
+                return (
+                  <Edge {...edge} graph={graph} scale={scale} key={`${edge.from}-${edge.to}`} />
+                );
               })}
               {graph.nodes.map(({ x, y, room, strings }: any, i: number) => {
                 const fill = colorMap[roomKey(room, strings)]?.color || "gray";

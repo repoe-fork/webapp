@@ -8,9 +8,7 @@ type AccordionProps = {
 
 export function Accordion({ title, children, defaultOpen = false }: AccordionProps) {
   return (
-    <details
-      className="rounded-md border border-slate-200 bg-white shadow-sm"
-      open={defaultOpen}>
+    <details className="rounded-md border border-slate-200 bg-white shadow-sm" open={defaultOpen}>
       <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-slate-900">
         {title}
       </summary>
