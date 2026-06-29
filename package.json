@@ -12,7 +12,8 @@
     "test": "vitest",
     "e2e": "playwright test",
     "e2e:debug": "playwright test --headed --debug",
-    "e2e:ui": "playwright test --ui"
+    "e2e:ui": "playwright test --ui",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
@@ -22,6 +23,8 @@
     "@types/sql.js": "^1.4.11",
     "@vitejs/plugin-react": "^6.0.3",
     "@vitest/ui": "^4.1.9",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
     "prettier": "^3.8.4",
     "typescript": "^5.9.3",
     "vite": "^8.1.0",
@@ -41,5 +44,8 @@
   "prettier": {
     "printWidth": 100,
     "bracketSameLine": true
+  },
+  "lint-staged": {
+    "*.{js,css,md}": "prettier --write"
   }
 }
