@@ -5,6 +5,8 @@ import { useQueryParam } from "use-navigation-api";
 import React, { useState } from "react";
 import { ColorLegend } from "components/layout/color-legend";
 import { Accordion } from "components/ui/accordion";
+import { useAtom } from "jotai";
+import { headerHeight } from "../state/headerHeight";
 
 export const getAreas = (game: string, version?: string) => queryOptions({
   queryKey: ["areas", { game, version }],
@@ -13,6 +15,7 @@ export const getAreas = (game: string, version?: string) => queryOptions({
 });
 
 export function AreasPage() {
+  const [top] = useAtom(headerHeight);
   const selectedAreaId = useQueryParam("area");
   const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
   const version = useQueryParam("version");
@@ -27,7 +30,8 @@ export function AreasPage() {
         {legendState ? (
           <>
             {/* Mobile collapsible legend */}
-            <div className="fixed left-0 right-0 top-19 z-20 bg-slate-50/95 backdrop-blur-sm px-4 py-2 lg:hidden">
+            <div className="fixed left-0 right-0 z-20 bg-slate-50/95 backdrop-blur-sm px-4 py-2 lg:hidden"
+                 style={{top}}>
               <Accordion title={legendState.title}>
                 <div className="max-h-[60vh] overflow-auto">
                   <ColorLegend

@@ -11,6 +11,9 @@ import { AreasPage, getAreas } from "routes/areas";
 import { SqlPage } from "routes/sql";
 import { AboutPage } from "routes/about";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useAtom } from "jotai";
+import { headerHeight } from "./state/headerHeight";
+import ResizeObserver from 'rc-resize-observer';
 
 type Tab = "home" | "areas" | "sql" | "about";
 
@@ -179,6 +182,8 @@ export function App() {
   const location = useLocation();
   const params = useQueryParams(["tab", "game"]);
 
+  const [,setHeaderHeight] = useAtom(headerHeight);
+
   const tab = (["areas", "sql", "about", "home"].find((p) => p === params.tab) || "home") as Tab;
   const game = params.game === "poe1" ? "poe1" : "poe2";
 
@@ -210,6 +215,7 @@ export function App() {
 
   return (
     <>
+      <ResizeObserver onResize={({height}) => setHeaderHeight(height)}>
       <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-2">
           <div className="text-lg font-semibold tracking-tight text-slate-900">poe webapp</div>
@@ -227,6 +233,7 @@ export function App() {
           </div>
         </div>
       </header>
+      </ResizeObserver>
       <main className="mx-auto max-w-6xl px-4 py-4">
         <Suspense fallback={<div>Loading...</div>}>
           <AppContent tab={tab} />
