@@ -1,0 +1,135 @@
+- generic [ref=e2]:
+    - banner [ref=e3]:
+        - generic [ref=e4]:
+            - generic [ref=e5]: poe webapp
+            - generic [ref=e6]:
+                - link "PoE 1" [ref=e7] [cursor=pointer]:
+                    - /url: /webapp?tab=areas&game=poe1
+                - link "PoE 2" [ref=e8] [cursor=pointer]:
+                    - /url: /webapp?tab=areas&game=poe2
+            - navigation [ref=e9]:
+                - link "Home" [ref=e10] [cursor=pointer]:
+                    - /url: /webapp?tab=home&game=poe2
+                - link "Areas" [ref=e11] [cursor=pointer]:
+                    - /url: /webapp?tab=areas&game=poe2
+                - link "SQL" [ref=e12] [cursor=pointer]:
+                    - /url: /webapp?tab=sql&game=poe2
+                - link "About" [ref=e13] [cursor=pointer]:
+                    - /url: /webapp?tab=about&game=poe2
+            - generic [ref=e20]:
+                - generic [ref=e21]:
+                    - checkbox "pre-0.5" [ref=e22]
+                    - text: pre-0.5
+                - combobox "Search PoE 2 areas..." [ref=e23]: The Red Vale
+                - button "Clear" [ref=e31]
+    - main [ref=e14]:
+        - generic [ref=e24]:
+            - complementary [ref=e700]:
+                - generic [ref=e703]:
+                    - generic [ref=e704]:
+                        - heading "Room legend" [level=3] [ref=e705]
+                        - generic [ref=e706]: 15 entries
+                    - list [ref=e707]:
+                        - listitem [ref=e708]:
+                            - button "<unknown>" [ref=e709]:
+                                - generic "<unknown>" [ref=e711]
+                        - listitem [ref=e712]:
+                            - button "bridge1" [ref=e713]:
+                                - generic "bridge1" [ref=e715]
+                        - listitem [ref=e716]:
+                            - button "bridge2" [ref=e717]:
+                                - generic "bridge2" [ref=e719]
+                        - listitem [ref=e720]:
+                            - button "cliffwater" [ref=e721]:
+                                - generic "cliffwater" [ref=e723]
+                        - listitem [ref=e724]:
+                            - button "curve5" [ref=e725]:
+                                - generic "curve5" [ref=e727]
+                        - listitem [ref=e728]:
+                            - button "curve5_shallow" [ref=e729]:
+                                - generic "curve5_shallow" [ref=e731]
+                        - listitem [ref=e732]:
+                            - button "encounter" [ref=e733]:
+                                - generic "encounter" [ref=e735]
+                        - listitem [ref=e736]:
+                            - button "encounter \"unique1\"" [ref=e737]:
+                                - generic "encounter \"unique1\"" [ref=e739]
+                        - listitem [ref=e740]:
+                            - button "encounter_mid" [ref=e741]:
+                                - generic "encounter_mid" [ref=e743]
+                        - listitem [ref=e744]:
+                            - button "entrance \"default\" \"entrance1\"" [ref=e745]:
+                                - generic "entrance \"default\" \"entrance1\"" [ref=e747]
+                        - listitem [ref=e748]:
+                            - button "entrance2 \"default\" \"entrance1\"" [ref=e749]:
+                                - generic "entrance2 \"default\" \"entrance1\"" [ref=e751]
+                        - listitem [ref=e752]:
+                            - button "flows" [ref=e753]:
+                                - generic "flows" [ref=e755]
+                        - listitem [ref=e756]:
+                            - button "stream_shallow" [ref=e757]:
+                                - generic "stream_shallow" [ref=e759]
+                        - listitem [ref=e760]:
+                            - button "stream1" [ref=e761]:
+                                - generic "stream1" [ref=e763]
+                        - listitem [ref=e764]:
+                            - button "stream2" [ref=e765]:
+                                - generic "stream2" [ref=e767]
+            - generic [ref=e36]:
+                - generic [ref=e37]:
+                    - generic [ref=e38]:
+                        - heading "The Red Vale" [level=3] [ref=e39]
+                        - paragraph [ref=e40]: 8 graphs
+                    - button "All graphs" [ref=e605]
+                - generic [ref=e606]:
+                    - heading "Metadata/Terrain/Gallows/Act1/1_5/Graphs/redvale_E1.tgr" [level=4] [ref=e607]
+                    - generic [ref=e608]:
+                        - generic [ref=e609]:
+                            - img [ref=e611]:
+                                - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e613]
+                                - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e615]
+                                - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e617]
+                                - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e619]
+                                - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e621]
+                                - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e623]
+                                - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver_facing_virtual.et" [ref=e625]
+                                - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e627]
+                                - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e629]
+                                - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e631]
+                                - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e633]
+                                - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e635]
+                                - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e637]
+                                - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e639]
+                                - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e641]
+                                - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                                - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et"
+                                - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e643]
+                                - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e645]
+                                - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e647]
+                                - generic "Metadata/Terrain/Woods/RedvaleStreambank/redvalestream_virtual.et" [ref=e649]
+                                - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e651]
+                                - generic "Metadata/Terrain/Woods/RockpileRiver/rockpileriver.et" [ref=e653]
+                                - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e655]
+                                - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver_facing_virtual.et" [ref=e657]
+                                - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e659]
+                                - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e661]
+                                - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e663]
+                                - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e665]
+                                - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e667]
+                                - generic "encounter" [ref=e668] [cursor=pointer]
+                                - generic "flows" [ref=e669] [cursor=pointer]
+                                - generic "cliffwater" [ref=e670] [cursor=pointer]
+                                - generic "flows" [ref=e671] [cursor=pointer]
+                                - generic "curve5" [ref=e672] [cursor=pointer]
+                                - generic "entrance \"default\" \"entrance1\"" [ref=e673] [cursor=pointer]
+                                - generic "bridge2" [ref=e674] [cursor=pointer]
+                                - generic "encounter_mid" [ref=e675] [cursor=pointer]
+                                - generic "stream2" [ref=e676] [cursor=pointer]
+                                - generic "stream_shallow" [ref=e677] [cursor=pointer]
+                                - generic "bridge2" [ref=e689] [cursor=pointer]
+                                - generic "encounter" [ref=e692] [cursor=pointer]
+                            - generic [ref=e695]: Select a room to preview it here.
+                        - group [ref=e696]:
+                            - generic "Layout JSON" [ref=e697] [cursor=pointer]
+                        - group [ref=e698]:
+                            - generic "Graph JSON" [ref=e699] [cursor=pointer]

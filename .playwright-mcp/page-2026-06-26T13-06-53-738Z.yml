@@ -1,0 +1,26 @@
+- generic [ref=e2]:
+    - banner [ref=e3]:
+        - generic [ref=e4]:
+            - generic [ref=e5]: poe webapp
+            - generic [ref=e6]:
+                - link "PoE 1" [ref=e7] [cursor=pointer]:
+                    - /url: /webapp?tab=areas&game=poe1
+                - link "PoE 2" [ref=e8] [cursor=pointer]:
+                    - /url: /webapp?tab=areas&game=poe2
+            - navigation [ref=e9]:
+                - link "Home" [ref=e10] [cursor=pointer]:
+                    - /url: /webapp?tab=home&game=poe2
+                - link "Areas" [ref=e11] [cursor=pointer]:
+                    - /url: /webapp?tab=areas&game=poe2
+                - link "SQL" [ref=e12] [cursor=pointer]:
+                    - /url: /webapp?tab=sql&game=poe2
+                - link "About" [ref=e13] [cursor=pointer]:
+                    - /url: /webapp?tab=about&game=poe2
+            - generic [ref=e20]:
+                - generic [ref=e21]:
+                    - checkbox "pre-0.5" [ref=e22]
+                    - text: pre-0.5
+                - combobox "Search PoE 2 areas..." [ref=e23]
+    - main [ref=e14]:
+        - generic [ref=e24]:
+            - complementary

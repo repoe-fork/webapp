@@ -1,0 +1,460 @@
+- generic [ref=e2]:
+    - banner [ref=e3]:
+        - generic [ref=e4]:
+            - generic [ref=e5]: poe webapp
+            - generic [ref=e6]:
+                - link "PoE 1" [ref=e7] [cursor=pointer]:
+                    - /url: /webapp?tab=areas&game=poe1
+                - link "PoE 2" [ref=e8] [cursor=pointer]:
+                    - /url: /webapp?tab=areas&game=poe2
+            - navigation [ref=e9]:
+                - link "Home" [ref=e10] [cursor=pointer]:
+                    - /url: /webapp?tab=home&game=poe2
+                - link "Areas" [ref=e11] [cursor=pointer]:
+                    - /url: /webapp?tab=areas&game=poe2
+                - link "SQL" [ref=e12] [cursor=pointer]:
+                    - /url: /webapp?tab=sql&game=poe2
+                - link "About" [ref=e13] [cursor=pointer]:
+                    - /url: /webapp?tab=about&game=poe2
+            - generic [ref=e20]:
+                - generic [ref=e21]:
+                    - checkbox "pre-0.5" [ref=e22]
+                    - text: pre-0.5
+                - combobox "Search PoE 2 areas..." [ref=e23]: The Red Vale
+                - button "Clear" [ref=e31]
+    - main [ref=e14]:
+        - generic [ref=e24]:
+            - complementary:
+                - group [ref=e33]:
+                    - generic "Room legend" [ref=e34] [cursor=pointer]
+            - generic [ref=e36]:
+                - generic [ref=e38]:
+                    - heading "The Red Vale" [level=3] [ref=e39]
+                    - paragraph [ref=e40]: 8 graphs
+                - generic [ref=e41]:
+                    - generic [ref=e44]:
+                        - generic [ref=e45]:
+                            - generic [ref=e46]:
+                                - paragraph [ref=e47]: redvale_E1.tgr
+                                - paragraph [ref=e48]: 44 rooms · 26 nodes · 30 edges
+                            - button "Focus" [ref=e49]
+                        - img [ref=e51]:
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e53]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e55]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e57]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e59]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e61]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e63]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver_facing_virtual.et" [ref=e65]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e67]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e69]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e71]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e73]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e75]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e77]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e79]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e81]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e83]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e85]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e87]
+                            - generic "Metadata/Terrain/Woods/RedvaleStreambank/redvalestream_virtual.et" [ref=e89]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e91]
+                            - generic "Metadata/Terrain/Woods/RockpileRiver/rockpileriver.et" [ref=e93]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e95]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver_facing_virtual.et" [ref=e97]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e99]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e101]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e103]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e105]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e107]
+                            - generic "encounter" [ref=e108] [cursor=pointer]
+                            - generic "flows" [ref=e109] [cursor=pointer]
+                            - generic "cliffwater" [ref=e110] [cursor=pointer]
+                            - generic "flows" [ref=e111] [cursor=pointer]
+                            - generic "curve5" [ref=e112] [cursor=pointer]
+                            - generic "entrance \"default\" \"entrance1\"" [ref=e113] [cursor=pointer]
+                            - generic "bridge2" [ref=e114] [cursor=pointer]
+                            - generic "encounter_mid" [ref=e115] [cursor=pointer]
+                            - generic "stream2" [ref=e116] [cursor=pointer]
+                            - generic "stream_shallow" [ref=e117] [cursor=pointer]
+                            - generic "<unknown>" [ref=e118]
+                            - generic "<unknown>" [ref=e119]
+                            - generic "<unknown>" [ref=e120]
+                            - generic "<unknown>" [ref=e121]
+                            - generic "<unknown>" [ref=e122]
+                            - generic "<unknown>" [ref=e123]
+                            - generic "<unknown>" [ref=e124]
+                            - generic "<unknown>" [ref=e125]
+                            - generic "<unknown>" [ref=e126]
+                            - generic "<unknown>" [ref=e127]
+                            - generic "<unknown>" [ref=e128]
+                            - generic "bridge2" [ref=e129] [cursor=pointer]
+                            - generic "<unknown>" [ref=e130]
+                            - generic "<unknown>" [ref=e131]
+                            - generic "encounter" [ref=e132] [cursor=pointer]
+                            - generic "<unknown>" [ref=e133]
+                    - generic [ref=e136]:
+                        - generic [ref=e137]:
+                            - generic [ref=e138]:
+                                - paragraph [ref=e139]: redvale_E2.tgr
+                                - paragraph [ref=e140]: 44 rooms · 24 nodes · 27 edges
+                            - button "Focus" [ref=e141]
+                        - img [ref=e143]:
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e145]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e147]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver_facing_virtual.et" [ref=e149]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e151]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e153]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e155]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e157]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e159]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e161]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e163]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e165]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e167]
+                            - generic "Metadata/Terrain/Woods/RockpileRiver/rockpileriver.et" [ref=e169]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver_facing_virtual.et" [ref=e171]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver_virtual.et"
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver_virtual.et" [ref=e173]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e175]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e177]
+                            - generic "bridge1" [ref=e178] [cursor=pointer]
+                            - generic "encounter" [ref=e179] [cursor=pointer]
+                            - generic "cliffwater" [ref=e180] [cursor=pointer]
+                            - generic "encounter" [ref=e181] [cursor=pointer]
+                            - generic "curve5" [ref=e182] [cursor=pointer]
+                            - generic "entrance \"default\" \"entrance1\"" [ref=e183] [cursor=pointer]
+                            - generic "bridge1" [ref=e184] [cursor=pointer]
+                            - generic "curve5" [ref=e185] [cursor=pointer]
+                            - generic "<unknown>" [ref=e186]
+                            - generic "<unknown>" [ref=e187]
+                            - generic "<unknown>" [ref=e188]
+                            - generic "<unknown>" [ref=e189]
+                            - generic "<unknown>" [ref=e190]
+                            - generic "<unknown>" [ref=e191]
+                            - generic "<unknown>" [ref=e192]
+                            - generic "<unknown>" [ref=e193]
+                            - generic "<unknown>" [ref=e194]
+                            - generic "<unknown>" [ref=e195]
+                            - generic "<unknown>" [ref=e196]
+                            - generic "encounter" [ref=e197] [cursor=pointer]
+                            - generic "<unknown>" [ref=e198]
+                            - generic "<unknown>" [ref=e199]
+                            - generic "<unknown>" [ref=e200]
+                            - generic "<unknown>" [ref=e201]
+                    - generic [ref=e204]:
+                        - generic [ref=e205]:
+                            - generic [ref=e206]:
+                                - paragraph [ref=e207]: redvale_N1.tgr
+                                - paragraph [ref=e208]: 44 rooms · 18 nodes · 22 edges
+                            - button "Focus" [ref=e209]
+                        - img [ref=e211]:
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e213]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e215]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e217]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e219]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e221]
+                            - generic "Metadata/Terrain/Woods/RockpileRiver/rockpileriver.et" [ref=e223]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e225]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e227]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e229]
+                            - generic "Metadata/Terrain/Woods/RedvaleStreambank/redvalestream_virtual.et" [ref=e231]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver_facing_virtual.et" [ref=e233]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e235]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e237]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e239]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e241]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e243]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e245]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e247]
+                            - generic "flows" [ref=e248] [cursor=pointer]
+                            - generic "entrance2 \"default\" \"entrance1\"" [ref=e249] [cursor=pointer]
+                            - generic "encounter_mid" [ref=e250] [cursor=pointer]
+                            - generic "cliffwater" [ref=e251] [cursor=pointer]
+                            - generic "bridge2" [ref=e252] [cursor=pointer]
+                            - generic "<unknown>" [ref=e253]
+                            - generic "<unknown>" [ref=e254]
+                            - generic "<unknown>" [ref=e255]
+                            - generic "stream1" [ref=e256] [cursor=pointer]
+                            - generic "<unknown>" [ref=e257]
+                            - generic "stream2" [ref=e258] [cursor=pointer]
+                            - generic "stream_shallow" [ref=e259] [cursor=pointer]
+                            - generic "encounter" [ref=e260] [cursor=pointer]
+                            - generic "encounter" [ref=e261] [cursor=pointer]
+                            - generic "<unknown>" [ref=e262]
+                            - generic "<unknown>" [ref=e263]
+                            - generic "<unknown>" [ref=e264]
+                            - generic "<unknown>" [ref=e265]
+                    - generic [ref=e268]:
+                        - generic [ref=e269]:
+                            - generic [ref=e270]:
+                                - paragraph [ref=e271]: redvale_N2.tgr
+                                - paragraph [ref=e272]: 44 rooms · 21 nodes · 23 edges
+                            - button "Focus" [ref=e273]
+                        - img [ref=e275]:
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e277]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver_facing_virtual.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e279]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e281]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e283]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e285]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e287]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e289]
+                            - generic "Metadata/Terrain/Woods/RockpileRiver/rockpileriver.et" [ref=e291]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e293]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e295]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e297]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e299]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e301]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleStreambank/redvalestream_virtual.et" [ref=e303]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e305]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver_virtual.et" [ref=e307]
+                            - generic "Metadata/Terrain/Woods/RedvaleStreambank/redvalestream_virtual.et" [ref=e309]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e311]
+                            - generic "encounter" [ref=e312] [cursor=pointer]
+                            - generic "entrance \"default\" \"entrance1\"" [ref=e313] [cursor=pointer]
+                            - generic "curve5" [ref=e314] [cursor=pointer]
+                            - generic "cliffwater" [ref=e315] [cursor=pointer]
+                            - generic "<unknown>" [ref=e316]
+                            - generic "<unknown>" [ref=e317]
+                            - generic "<unknown>" [ref=e318]
+                            - generic "<unknown>" [ref=e319]
+                            - generic "<unknown>" [ref=e320]
+                            - generic "<unknown>" [ref=e321]
+                            - generic "<unknown>" [ref=e322]
+                            - generic "<unknown>" [ref=e323]
+                            - generic "<unknown>" [ref=e324]
+                            - generic "stream1" [ref=e325] [cursor=pointer]
+                            - generic "<unknown>" [ref=e326]
+                            - generic "stream2" [ref=e327] [cursor=pointer]
+                            - generic "stream_shallow" [ref=e328] [cursor=pointer]
+                            - generic "<unknown>" [ref=e329]
+                            - generic "encounter" [ref=e330] [cursor=pointer]
+                            - generic "<unknown>" [ref=e331]
+                            - generic "encounter" [ref=e332] [cursor=pointer]
+                    - generic [ref=e335]:
+                        - generic [ref=e336]:
+                            - generic [ref=e337]:
+                                - paragraph [ref=e338]: redvale_S1.tgr
+                                - paragraph [ref=e339]: 44 rooms · 24 nodes · 24 edges
+                            - button "Focus" [ref=e340]
+                        - img [ref=e342]:
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e344]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e346]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver_facing_virtual.et" [ref=e348]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e350]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e352]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e354]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e356]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e358]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e360]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e362]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e364]
+                            - generic "Metadata/Terrain/Woods/RockpileRiver/rockpileriver.et" [ref=e366]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e368]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e370]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e372]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e374]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e376]
+                            - generic "Metadata/Terrain/Woods/RedvaleStreambank/redvalestream_virtual.et" [ref=e378]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e380]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "<unknown>" [ref=e381]
+                            - generic "<unknown>" [ref=e382]
+                            - generic "cliffwater" [ref=e383] [cursor=pointer]
+                            - generic "flows" [ref=e384] [cursor=pointer]
+                            - generic "entrance \"default\" \"entrance1\"" [ref=e385] [cursor=pointer]
+                            - generic "curve5" [ref=e386] [cursor=pointer]
+                            - generic "<unknown>" [ref=e387]
+                            - generic "<unknown>" [ref=e388]
+                            - generic "<unknown>" [ref=e389]
+                            - generic "<unknown>" [ref=e390]
+                            - generic "<unknown>" [ref=e391]
+                            - generic "<unknown>" [ref=e392]
+                            - generic "<unknown>" [ref=e393]
+                            - generic "<unknown>" [ref=e394]
+                            - generic "<unknown>" [ref=e395]
+                            - generic "encounter" [ref=e396] [cursor=pointer]
+                            - generic "bridge2" [ref=e397] [cursor=pointer]
+                            - generic "stream2" [ref=e398] [cursor=pointer]
+                            - generic "stream_shallow" [ref=e399] [cursor=pointer]
+                            - generic "encounter \"unique1\"" [ref=e400] [cursor=pointer]
+                            - generic "encounter" [ref=e401] [cursor=pointer]
+                            - generic "<unknown>" [ref=e402]
+                            - generic "<unknown>" [ref=e403]
+                            - generic "encounter \"unique1\"" [ref=e404] [cursor=pointer]
+                    - generic [ref=e407]:
+                        - generic [ref=e408]:
+                            - generic [ref=e409]:
+                                - paragraph [ref=e410]: redvale_S2.tgr
+                                - paragraph [ref=e411]: 44 rooms · 20 nodes · 23 edges
+                            - button "Focus" [ref=e412]
+                        - img [ref=e414]:
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e416]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e418]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e420]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e422]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e424]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e426]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e428]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e430]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e432]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e434]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e436]
+                            - generic "Metadata/Terrain/Woods/RockpileRiver/rockpileriver.et" [ref=e438]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e440]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e442]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e444]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e446]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e448]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e450]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e452]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e454]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver_virtual.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleStreambank/redvalestream_virtual.et" [ref=e456]
+                            - generic "cliffwater" [ref=e457] [cursor=pointer]
+                            - generic "entrance \"default\" \"entrance1\"" [ref=e458] [cursor=pointer]
+                            - generic "curve5_shallow" [ref=e459] [cursor=pointer]
+                            - generic "<unknown>" [ref=e460]
+                            - generic "<unknown>" [ref=e461]
+                            - generic "<unknown>" [ref=e462]
+                            - generic "<unknown>" [ref=e463]
+                            - generic "<unknown>" [ref=e464]
+                            - generic "<unknown>" [ref=e465]
+                            - generic "<unknown>" [ref=e466]
+                            - generic "<unknown>" [ref=e467]
+                            - generic "<unknown>" [ref=e468]
+                            - generic "<unknown>" [ref=e469]
+                            - generic "encounter" [ref=e470] [cursor=pointer]
+                            - generic "bridge2" [ref=e471] [cursor=pointer]
+                            - generic "stream2" [ref=e472] [cursor=pointer]
+                            - generic "stream_shallow" [ref=e473] [cursor=pointer]
+                            - generic "encounter" [ref=e474] [cursor=pointer]
+                            - generic "<unknown>" [ref=e475]
+                            - generic "encounter" [ref=e476] [cursor=pointer]
+                    - generic [ref=e479]:
+                        - generic [ref=e480]:
+                            - generic [ref=e481]:
+                                - paragraph [ref=e482]: redvale_W1.tgr
+                                - paragraph [ref=e483]: 44 rooms · 22 nodes · 24 edges
+                            - button "Focus" [ref=e484]
+                        - img [ref=e486]:
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e488]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e490]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e492]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver_facing_virtual.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e494]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e496]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e498]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e500]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e502]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e504]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e506]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/RockpileRiver/rockpileriver.et" [ref=e508]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleStreambank/redvalestream_virtual.et" [ref=e510]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e512]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver.et" [ref=e514]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e516]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e518]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e520]
+                            - generic "cliffwater" [ref=e521] [cursor=pointer]
+                            - generic "flows" [ref=e522] [cursor=pointer]
+                            - generic "entrance \"default\" \"entrance1\"" [ref=e523] [cursor=pointer]
+                            - generic "encounter" [ref=e524] [cursor=pointer]
+                            - generic "curve5" [ref=e525] [cursor=pointer]
+                            - generic "stream_shallow" [ref=e526] [cursor=pointer]
+                            - generic "encounter" [ref=e527] [cursor=pointer]
+                            - generic "<unknown>" [ref=e528]
+                            - generic "<unknown>" [ref=e529]
+                            - generic "<unknown>" [ref=e530]
+                            - generic "<unknown>" [ref=e531]
+                            - generic "<unknown>" [ref=e532]
+                            - generic "<unknown>" [ref=e533]
+                            - generic "<unknown>" [ref=e534]
+                            - generic "<unknown>" [ref=e535]
+                            - generic "<unknown>" [ref=e536]
+                            - generic "<unknown>" [ref=e537]
+                            - generic "bridge2" [ref=e538] [cursor=pointer]
+                            - generic "stream2" [ref=e539] [cursor=pointer]
+                            - generic "encounter \"unique1\"" [ref=e540] [cursor=pointer]
+                            - generic "encounter \"unique1\"" [ref=e541] [cursor=pointer]
+                            - generic "<unknown>" [ref=e542]
+                    - generic [ref=e545]:
+                        - generic [ref=e546]:
+                            - generic [ref=e547]:
+                                - paragraph [ref=e548]: redvale_W2.tgr
+                                - paragraph [ref=e549]: 44 rooms · 20 nodes · 22 edges
+                            - button "Focus" [ref=e550]
+                        - img [ref=e552]:
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e554]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver.et" [ref=e556]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e558]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e560]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e562]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e564]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et" [ref=e566]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e568]
+                            - generic "Metadata/Terrain/Woods/RockpileRiver/rockpileriver.et" [ref=e570]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et"
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e572]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods_rockpile.et" [ref=e574]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e576]
+                            - generic "Metadata/Terrain/Woods/Rockpile/woodsrockpile.et" [ref=e578]
+                            - generic "Metadata/Terrain/Woods/RedvaleWoods/redvalewoods.et"
+                            - generic "Metadata/Terrain/Woods/RedvaleStreambank/redvalestream_virtual.et" [ref=e580]
+                            - generic "Metadata/Terrain/Woods/ShallowRiver/shallowriver_virtual.et" [ref=e582]
+                            - generic "Metadata/Terrain/Woods/RedvaleRiver/redvaleriver_facing_virtual.et" [ref=e584]
+                            - generic "cliffwater" [ref=e585] [cursor=pointer]
+                            - generic "entrance2 \"default\" \"entrance1\"" [ref=e586] [cursor=pointer]
+                            - generic "curve5" [ref=e587] [cursor=pointer]
+                            - generic "stream_shallow" [ref=e588] [cursor=pointer]
+                            - generic "<unknown>" [ref=e589]
+                            - generic "<unknown>" [ref=e590]
+                            - generic "<unknown>" [ref=e591]
+                            - generic "<unknown>" [ref=e592]
+                            - generic "<unknown>" [ref=e593]
+                            - generic "<unknown>" [ref=e594]
+                            - generic "<unknown>" [ref=e595]
+                            - generic "<unknown>" [ref=e596]
+                            - generic "<unknown>" [ref=e597]
+                            - generic "<unknown>" [ref=e598]
+                            - generic "encounter \"unique1\"" [ref=e599] [cursor=pointer]
+                            - generic "encounter" [ref=e600] [cursor=pointer]
+                            - generic "<unknown>" [ref=e601]
+                            - generic "encounter \"unique1\"" [ref=e602] [cursor=pointer]
+                            - generic "stream2" [ref=e603] [cursor=pointer]
+                            - generic "encounter" [ref=e604] [cursor=pointer]

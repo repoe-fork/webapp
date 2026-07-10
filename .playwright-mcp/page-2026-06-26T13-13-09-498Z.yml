@@ -1,0 +1,47 @@
+- generic [ref=e2]:
+    - banner [ref=e3]:
+        - generic [ref=e4]:
+            - generic [ref=e5]: poe webapp
+            - generic [ref=e6]:
+                - link "PoE 1" [ref=e7] [cursor=pointer]:
+                    - /url: /webapp?tab=areas&game=poe1&tile=Metadata%2FTerrain%2FWoods%2FFeatures_Rocks%2FForestFormation_10_forced.tdt&roomFile=Metadata%2FTerrain%2FGallows%2FAct1%2F1_5%2FRooms%2Fbridge_1.arm
+                - link "PoE 2" [ref=e8] [cursor=pointer]:
+                    - /url: /webapp?tab=areas&game=poe2&tile=Metadata%2FTerrain%2FWoods%2FFeatures_Rocks%2FForestFormation_10_forced.tdt&roomFile=Metadata%2FTerrain%2FGallows%2FAct1%2F1_5%2FRooms%2Fbridge_1.arm
+            - navigation [ref=e9]:
+                - link "Home" [ref=e10] [cursor=pointer]:
+                    - /url: /webapp?tab=home&game=poe2
+                - link "Areas" [ref=e11] [cursor=pointer]:
+                    - /url: /webapp?tab=areas&game=poe2
+                - link "SQL" [ref=e12] [cursor=pointer]:
+                    - /url: /webapp?tab=sql&game=poe2
+                - link "About" [ref=e13] [cursor=pointer]:
+                    - /url: /webapp?tab=about&game=poe2
+            - generic [ref=e20]:
+                - generic [ref=e21]:
+                    - checkbox "pre-0.5" [ref=e22]
+                    - text: pre-0.5
+                - combobox "Search PoE 2 areas..." [ref=e23]: Clearfell Encampment
+                - button "Clear" [ref=e1493]
+    - main [ref=e14]:
+        - generic [ref=e24]:
+            - complementary [ref=e700]:
+                - generic [ref=e1496]:
+                    - generic [ref=e1497]:
+                        - heading "Room legend" [level=3] [ref=e1498]
+                        - generic [ref=e1499]: 1 entries
+                    - list [ref=e1500]:
+                        - listitem [ref=e1501]:
+                            - button "town \"default\" \"entrance1disabled\" \"entrance2south\" \"entrance3east\" \"entrance4north\" \"entrance5\"" [ref=e1502]:
+                                - generic "town \"default\" \"entrance1disabled\" \"entrance2south\" \"entrance3east\" \"entrance4north\" \"entrance5\"" [ref=e1504]
+            - generic [ref=e1505]:
+                - generic [ref=e1507]:
+                    - heading "Clearfell Encampment" [level=3] [ref=e1508]
+                    - paragraph [ref=e1509]: 1 graph
+                - generic [ref=e1513]:
+                    - generic [ref=e1514]:
+                        - generic [ref=e1515]:
+                            - paragraph [ref=e1516]: town_W_1.tgr
+                            - paragraph [ref=e1517]: 3 rooms · 1 nodes · 0 edges
+                        - button "Focus" [ref=e1518]
+                    - img [ref=e1520]:
+                        - generic "town \"default\" \"entrance1disabled\" \"entrance2south\" \"entrance3east\" \"entrance4north\" \"entrance5\"" [ref=e1521] [cursor=pointer]

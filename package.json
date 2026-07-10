@@ -39,7 +39,9 @@
     "rc-resize-observer": "^1.4.3",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "use-navigation-api": "^0.5.0"
+    "sql.js-httpvfs": "^0.8.12",
+    "use-navigation-api": "^0.5.0",
+    "wa-sqlite": "^1.0.0"
   },
   "prettier": {
     "printWidth": 100,

@@ -11,28 +11,66 @@ import {
   useContext,
   useMemo,
   useState,
+  useEffect,
 } from "react";
+import { SearchWidget } from "./SearchWidget";
 import { Alert } from "components/ui/alert";
 import { Button } from "components/ui/button";
+import { createVfsDbWorker } from "../lib/sqlite-vfs";
 
 const SQL = initSqlJs({ locateFile: () => wasm });
 
 export const getDatabase = (url: string) =>
   queryOptions({
     queryKey: ["database", url],
-    queryFn: (): Promise<Database> =>
-      fetch(url, { cache: "default" })
-        .then((r) => r.arrayBuffer())
-        .then((b) => SQL.then(({ Database }) => new Database(new Uint8Array(b)))),
+    queryFn: async () => {
+      try {
+        return await createVfsDbWorker(url);
+      } catch (e) {
+        console.warn("VFS failed, falling back to full download:", e);
+        return SQL.then(({ Database }) =>
+          fetch(url, { cache: "default" })
+            .then((r) => r.arrayBuffer())
+            .then((b) => new Database(new Uint8Array(b)))
+        );
+      }
+    },
   });
 
 type SqlValue = number | string | Uint8Array | null;
 type QueryExecResult = {
   columns: string[];
   values: SqlValue[][];
+  tableName?: string;
 };
 
-const ResultTable: FC<{ result: QueryExecResult }> = ({ result: { columns, values } }) => {
+const ResultTable: FC<{ result: QueryExecResult }> = ({ result: { columns, values, tableName } }) => {
+  const { worker, page, pageSize } = useContext(SQLContext);
+
+  const findRelated = async (rowIndex: number) => {
+    if (!tableName) return;
+    const sourceRowId = (page * pageSize) + rowIndex;
+    
+    // Check if worker is VFS or Database
+    const isVfs = worker.db && typeof worker.db.query === 'function';
+    
+    let related: any;
+    if (isVfs) {
+      related = await worker.db.query(
+        `SELECT * FROM relations WHERE source_table = '${tableName}' AND source_row = ${sourceRowId}`
+      );
+    } else {
+      const stmt = worker.prepare(`SELECT * FROM relations WHERE source_table = '${tableName}' AND source_row = ${sourceRowId}`);
+      related = [];
+      while (stmt.step()) {
+          related.push(stmt.getAsObject());
+      }
+      stmt.free();
+    }
+    console.log("Related rows:", related);
+    // TODO: Display related rows
+  };
+
   return (
     <div className="overflow-auto rounded-lg border border-slate-200">
       <table className="min-w-full text-left text-sm">
@@ -43,6 +81,7 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({ result: { columns, value
                 {columnName}
               </th>
             ))}
+            <th className="px-3 py-2 font-semibold">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200">
@@ -53,6 +92,9 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({ result: { columns, value
                   {value}
                 </td>
               ))}
+              <td className="px-3 py-2">
+                <Button variant="outline" onClick={() => findRelated(rowIndex)}>Find Related</Button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -87,54 +129,52 @@ export const SQLContext = createContext<{
   setPage: Dispatch<SetStateAction<number>>;
   pageSize: number;
   setPageSize: Dispatch<SetStateAction<number>>;
+  worker: any;
 }>(null as any);
 
-function runQuery(db: Database, sql: string, page: number = 0, pageSize: number = 0) {
+async function runQuery(dbOrWorker: any, sql: string, page: number = 0, pageSize: number = 0) {
   const results: QueryExecResult[] = [];
 
+  const isVfs = dbOrWorker.db && typeof dbOrWorker.db.query === 'function';
+
   try {
-    // Prepare the statement
-    const stmt = db.prepare(sql);
+    let columns: string[] = [];
+    let values: SqlValue[][] = [];
 
-    // Get column names
-    const columns = stmt.getColumnNames();
-    const values: SqlValue[][] = [];
-
-    // If pagination is enabled (pageSize > 0)
-    if (pageSize > 0) {
-      // Skip rows for previous pages
-      let rowCount = 0;
-      const startRow = page * pageSize;
-
-      // Step through rows until we reach the start of the requested page
-      while (rowCount < startRow && stmt.step()) {
-        rowCount++;
+    if (isVfs) {
+      // VFS logic
+      let paginatedSql = sql;
+      if (pageSize > 0) {
+        paginatedSql = `${sql} LIMIT ${pageSize} OFFSET ${page * pageSize}`;
       }
-
-      // Fetch rows for the current page
-      let pageRowCount = 0;
-      while (pageRowCount < pageSize && stmt.step()) {
-        const row = stmt.get();
-        values.push(row);
-        pageRowCount++;
-      }
+      const rows = await dbOrWorker.db.query(paginatedSql);
+      columns = rows.length > 0 ? Object.keys(rows[0]) : [];
+      values = rows.map((row: any) => columns.map((col) => row[col]));
     } else {
-      // No pagination, fetch all rows
-      while (stmt.step()) {
-        const row = stmt.get();
-        values.push(row);
+      // Legacy Database logic
+      const stmt = dbOrWorker.prepare(sql);
+      columns = stmt.getColumnNames();
+
+      if (pageSize > 0) {
+        let rowCount = 0;
+        const startRow = page * pageSize;
+        while (rowCount < startRow && stmt.step()) rowCount++;
+        let pageRowCount = 0;
+        while (pageRowCount < pageSize && stmt.step()) {
+          values.push(stmt.get());
+          pageRowCount++;
+        }
+      } else {
+        while (stmt.step()) values.push(stmt.get());
       }
+      stmt.free();
     }
 
     // Add the result to the results array
     if (columns.length > 0) {
-      results.push({ columns, values });
+      results.push({ columns, values, tableName: sql.match(/FROM\s+["']?([A-Za-z0-9_]+)["']?/i)?.[1] });
     }
-
-    // Free the statement to release memory
-    stmt.free();
   } catch (e) {
-    // If there's an error, free any statements and rethrow
     throw e;
   }
 
@@ -150,18 +190,29 @@ export const SQLViewer: FC<
   const [sql, setSql] = useState("SELECT * FROM \"English\"('search for anything')");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10); // Default to 10 rows per page
+  const [res, setRes] = useState<QueryExecResult[]>();
+  const [err, setErr] = useState<any>();
 
-  const [res, err] = useMemo(() => {
-    if (query.error) {
-      return [undefined, query.error];
-    } else if (!query.data) {
-      return [];
-    }
-    try {
-      return [runQuery(query.data, sql, page, pageSize)];
-    } catch (e) {
-      return [undefined, e];
-    }
+  const [tableName, setTableName] = useState<string>();
+
+  const handleSearch = (table: string, query: string, orderByRank: boolean) => {
+    const ftsSql = `SELECT * FROM ${table} WHERE ${table} MATCH '${query}' ${orderByRank ? 'ORDER BY rank' : ''}`;
+    setSql(ftsSql);
+    setTableName(table);
+    setPage(0);
+  };
+
+  useEffect(() => {
+    const fetchResults = async () => {
+      try {
+        setErr(undefined);
+        const results = await runQuery(query.data, sql, page, pageSize);
+        setRes(results);
+      } catch (e) {
+        setErr(e);
+      }
+    };
+    fetchResults();
   }, [query.data, sql, page, pageSize]);
 
   // Function to handle page changes
@@ -178,8 +229,9 @@ export const SQLViewer: FC<
   const hasMorePages = hasResults && res[0].values.length === pageSize;
 
   return (
-    <SQLContext value={{ sql, setSql, page, setPage, pageSize, setPageSize }}>
+    <SQLContext value={{ sql, setSql, page, setPage, pageSize, setPageSize, worker: query.data }}>
       <div className="space-y-4">
+        <SearchWidget onSearch={handleSearch} />
         {children}
         {err ? <Alert variant="destructive">{String(err)}</Alert> : null}
         {res?.map((r, i) => (
