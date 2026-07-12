@@ -11,7 +11,7 @@ export async function createVfsDbWorker(url: string) {
         config: {
           serverMode: "full",
           url: url,
-          requestChunkSize: 4096,
+          requestChunkSize: 16384,
         },
       },
     ],
