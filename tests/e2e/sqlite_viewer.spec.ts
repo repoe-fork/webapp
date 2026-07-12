@@ -13,8 +13,8 @@ test("sqlite viewer loads and basic interaction", async ({ page }) => {
   await expect(page.getByText("Loading...")).not.toBeVisible({ timeout: 60000 });
 
   // Verify the search widget is present
-  const searchWidget = page.getByLabel("Order by Rank");
-  await expect(searchWidget).toBeVisible({ timeout: 10000 });
+  const searchButton = page.getByRole("button", { name: "Search" });
+  await expect(searchButton).toBeVisible({ timeout: 10000 });
 
   // Perform search
   await page.getByPlaceholder("Table name").fill("English");

@@ -31,7 +31,7 @@ test("sqlite viewer fallback and progress", async ({ page }) => {
   await expect(page.getByText(/Downloading database:/)).toBeVisible();
   
   // Eventually it should load
-  await expect(page.getByLabel("Order by Rank")).toBeVisible({ timeout: 60000 });
+  await expect(page.getByRole("button", { name: "Search" })).toBeVisible({ timeout: 60000 });
   
   // Verify it actually works by running a query
   await page.locator("textarea").fill("SELECT * FROM English LIMIT 1");

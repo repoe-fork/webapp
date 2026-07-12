@@ -78,31 +78,52 @@ type QueryExecResult = {
   tableName?: string;
 };
 
-const ResultTable: FC<{ result: QueryExecResult }> = ({ result: { columns, values, tableName } }) => {
-  const { worker, page, pageSize } = useContext(SQLContext);
+const ResultTable: FC<{ result: QueryExecResult }> = ({
+  result: { columns, values, tableName },
+}) => {
+  const { worker, page, pageSize, setSql } = useContext(SQLContext);
 
   const findRelated = async (rowIndex: number) => {
     if (!tableName) return;
-    const sourceRowId = (page * pageSize) + rowIndex;
-    
+    const sourceRowId = page * pageSize + rowIndex;
+
     // Check if worker is VFS or Database
-    const isVfs = worker.db && typeof worker.db.query === 'function';
-    
-    let related: any;
+    const isVfs = worker.db && typeof worker.db.query === "function";
+
+    let related: any[];
     if (isVfs) {
       related = await worker.db.query(
-        `SELECT * FROM relations WHERE source_table = '${tableName}' AND source_row = ${sourceRowId}`
+        `SELECT * FROM relations WHERE source_table = '${tableName}' AND source_row = ${sourceRowId}`,
       );
     } else {
-      const stmt = worker.prepare(`SELECT * FROM relations WHERE source_table = '${tableName}' AND source_row = ${sourceRowId}`);
+      const stmt = worker.prepare(
+        `SELECT * FROM relations WHERE source_table = '${tableName}' AND source_row = ${sourceRowId}`,
+      );
       related = [];
       while (stmt.step()) {
-          related.push(stmt.getAsObject());
+        related.push(stmt.getAsObject());
       }
       stmt.free();
     }
     console.log("Related rows:", related);
-    // TODO: Display related rows
+    if (related.length > 0) {
+      // Find the first target and show it
+      const { target_table, target_row } = related[0];
+      setSql(`SELECT * FROM ${target_table} WHERE rowid = ${target_row}`);
+    } else {
+      alert("No related rows found");
+    }
+  };
+
+  const findReferencing = async (rowIndex: number) => {
+    if (!tableName) return;
+    const sourceRowId = page * pageSize + rowIndex;
+    setSql(`SELECT * FROM relations WHERE target_table = '${tableName}' AND target_row = ${sourceRowId}`);
+  };
+
+  const handleSort = (column: string) => {
+    if (!tableName) return;
+    setSql(`SELECT * FROM ${tableName} ORDER BY "${column}"`);
   };
 
   return (
@@ -111,23 +132,44 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({ result: { columns, value
         <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             {columns.map((columnName) => (
-              <th key={columnName} className="px-3 py-2 font-semibold">
+              <th
+                key={columnName}
+                className="cursor-pointer px-3 py-2 font-semibold hover:bg-slate-200"
+                onClick={() => handleSort(columnName)}
+              >
                 {columnName}
               </th>
             ))}
-            <th className="px-3 py-2 font-semibold">Actions</th>
+            <th className="px-3 py-2 font-semibold text-center">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200">
           {values.map((row, rowIndex) => (
-            <tr key={rowIndex} className="odd:bg-white even:bg-slate-50">
+            <tr key={rowIndex} className="odd:bg-white even:bg-slate-50 hover:bg-blue-50">
               {row.map((value, cellIndex) => (
-                <td key={cellIndex} className="px-3 py-2 text-slate-700">
-                  {value}
+                <td key={cellIndex} className="px-3 py-2 text-slate-700 whitespace-nowrap overflow-hidden max-w-[300px] text-ellipsis">
+                  {String(value)}
                 </td>
               ))}
-              <td className="px-3 py-2">
-                <Button variant="outline" onClick={() => findRelated(rowIndex)}>Find Related</Button>
+              <td className="px-3 py-2 text-center whitespace-nowrap">
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    title="Find target row"
+                    onClick={() => findRelated(rowIndex)}
+                  >
+                    →
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    title="Find referencing rows"
+                    onClick={() => findReferencing(rowIndex)}
+                  >
+                    ←
+                  </Button>
+                </div>
               </td>
             </tr>
           ))}
@@ -178,7 +220,7 @@ async function runQuery(dbOrWorker: any, sql: string, page: number = 0, pageSize
     if (isVfs) {
       // VFS logic
       let paginatedSql = sql;
-      if (pageSize > 0) {
+      if (pageSize > 0 && !sql.toLowerCase().includes("limit")) {
         paginatedSql = `${sql} LIMIT ${pageSize} OFFSET ${page * pageSize}`;
       }
       const rows = await dbOrWorker.db.query(paginatedSql);
@@ -221,7 +263,7 @@ export const SQLViewer: FC<
   }>
 > = ({ url, children = <BasicInput /> }) => {
   const query = useSuspenseQuery(getDatabase(url));
-  const [sql, setSql] = useState("SELECT * FROM \"English\"('search for anything')");
+  const [sql, setSql] = useState('SELECT * FROM "English"');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10); // Default to 10 rows per page
   const [res, setRes] = useState<QueryExecResult[]>();
@@ -229,8 +271,10 @@ export const SQLViewer: FC<
 
   const [tableName, setTableName] = useState<string>();
 
-  const handleSearch = (table: string, query: string, orderByRank: boolean) => {
-    const ftsSql = `SELECT * FROM ${table} WHERE ${table} MATCH '${query}' ${orderByRank ? 'ORDER BY rank' : ''}`;
+  const handleSearch = (table: string, query: string) => {
+    const ftsSql = query
+      ? `SELECT * FROM ${table} WHERE ${table} MATCH '${query}' ORDER BY rank`
+      : `SELECT * FROM ${table}`;
     setSql(ftsSql);
     setTableName(table);
     setPage(0);

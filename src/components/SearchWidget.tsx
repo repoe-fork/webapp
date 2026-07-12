@@ -2,11 +2,10 @@ import { FC, useState } from "react";
 import { Button } from "components/ui/button";
 
 export const SearchWidget: FC<{
-  onSearch: (table: string, query: string, orderByRank: boolean) => void;
+  onSearch: (table: string, query: string) => void;
 }> = ({ onSearch }) => {
-  const [table, setTable] = useState("");
+  const [table, setTable] = useState("English");
   const [query, setQuery] = useState("");
-  const [orderByRank, setOrderByRank] = useState(true);
 
   return (
     <div className="flex flex-col gap-2 p-4 bg-slate-50 rounded-md border border-slate-200">
@@ -22,17 +21,11 @@ export const SearchWidget: FC<{
           placeholder="Search query (FTS5)"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") onSearch(table, query);
+          }}
         />
-      </div>
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={orderByRank}
-          onChange={(e) => setOrderByRank(e.target.checked)}
-          id="orderByRank"
-        />
-        <label htmlFor="orderByRank" className="text-sm">Order by Rank</label>
-        <Button onClick={() => onSearch(table, query, orderByRank)}>Search</Button>
+        <Button onClick={() => onSearch(table, query)}>Search</Button>
       </div>
     </div>
   );
