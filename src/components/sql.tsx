@@ -19,7 +19,10 @@ import {
   useNavigate,
 } from "use-navigation-api";
 import CodeMirror from "@uiw/react-codemirror";
-import { sql as sqlLang } from "@codemirror/lang-sql";
+import { sql as sqlLang, SQLite } from "@codemirror/lang-sql";
+import { syntaxTree } from "@codemirror/language";
+import { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
+import { Prec } from "@codemirror/state";
 import { SearchWidget } from "./SearchWidget";
 import { Alert } from "components/ui/alert";
 import { Button } from "components/ui/button";
@@ -237,7 +240,8 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
 
 const SqlEditor: FC = () => {
   const { sql, setSql, setPage, worker } = useContext(SQLContext);
-  const [schema, setSchema] = useState<Record<string, string[]>>({});
+  const [schema, setSchema] = useState<Record<string, { name: string; type: string }[]>>({});
+  const [relationsInfo, setRelationsInfo] = useState<Record<string, { column: string; target: string }[]>>({});
 
   useEffect(() => {
     const fetchSchema = async () => {
@@ -246,57 +250,75 @@ const SqlEditor: FC = () => {
         const isVfs = worker.db && typeof worker.db.query === "function";
         // Check if pragma_table_info is available
         const hasPragmaTableInfo = async () => {
-            try {
-                if (isVfs) {
-                    await worker.db.query("SELECT * FROM pragma_table_info('relations') LIMIT 1");
-                } else {
-                    worker.db.exec("SELECT * FROM pragma_table_info('relations') LIMIT 1");
-                }
-                return true;
-            } catch (e) {
-                return false;
+          try {
+            if (isVfs) {
+              await worker.db.query("SELECT * FROM pragma_table_info('relations') LIMIT 1");
+            } else {
+              worker.db.exec("SELECT * FROM pragma_table_info('relations') LIMIT 1");
             }
+            return true;
+          } catch (e) {
+            return false;
+          }
         };
 
         let rows: any[] = [];
         if (await hasPragmaTableInfo()) {
-            const schemaSql =
-              "SELECT m.name as table_name, p.name as column_name FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type='table' AND m.name NOT LIKE 'sqlite_%'";
-            if (isVfs) {
-              rows = await worker.db.query(schemaSql);
-            } else {
-              const stmt = worker.prepare(schemaSql);
-              while (stmt.step()) rows.push(stmt.getAsObject());
-              stmt.free();
-            }
+          const schemaSql =
+            "SELECT m.name as table_name, p.name as column_name, p.type FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type='table' AND m.name NOT LIKE 'sqlite_%'";
+          if (isVfs) {
+            rows = await worker.db.query(schemaSql);
+          } else {
+            const stmt = worker.prepare(schemaSql);
+            while (stmt.step()) rows.push(stmt.getAsObject());
+            stmt.free();
+          }
         } else {
-            // Fallback for older SQLite versions
-            const tableSql = "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'";
-            let tables: any[];
-            if (isVfs) {
-                tables = await worker.db.query(tableSql);
-            } else {
-                const stmt = worker.prepare(tableSql);
-                tables = [];
-                while (stmt.step()) tables.push(stmt.getAsObject());
-                stmt.free();
-            }
-            
-            for (const t of tables) {
-                const tableName = t.name;
-                // We can't easily get all columns for all tables without many queries here
-                // For now just add the table name with an empty column list to trigger table autocompletion
-                rows.push({ table_name: tableName, column_name: "" });
-            }
+          // Fallback for older SQLite versions
+          const tableSql = "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'";
+          let tables: any[];
+          if (isVfs) {
+            tables = await worker.db.query(tableSql);
+          } else {
+            const stmt = worker.prepare(tableSql);
+            tables = [];
+            while (stmt.step()) tables.push(stmt.getAsObject());
+            stmt.free();
+          }
+
+          for (const t of tables) {
+            const tableName = t.name;
+            rows.push({ table_name: tableName, column_name: "", type: "" });
+          }
         }
 
-        const newSchema: Record<string, string[]> = {};
+        const newSchema: Record<string, { name: string; type: string }[]> = {};
         for (const row of rows) {
           if (!newSchema[row.table_name]) newSchema[row.table_name] = [];
-          if (row.column_name) newSchema[row.table_name].push(row.column_name);
+          if (row.column_name) newSchema[row.table_name].push({ name: row.column_name, type: row.type });
         }
-        console.log("Database schema fetched for autocompletion:", Object.keys(newSchema).length, "tables");
         setSchema(newSchema);
+
+        // Fetch relations info for smart joins
+        const relInfoSql = "SELECT DISTINCT source_table, source_column, target_table FROM relations";
+        let relRows: any[] = [];
+        try {
+          if (isVfs) {
+            relRows = await worker.db.query(relInfoSql);
+          } else {
+            const stmt = worker.prepare(relInfoSql);
+            while (stmt.step()) relRows.push(stmt.getAsObject());
+            stmt.free();
+          }
+          const newRelInfo: Record<string, { column: string; target: string }[] > = {};
+          for (const row of relRows) {
+            if (!newRelInfo[row.source_table]) newRelInfo[row.source_table] = [];
+            newRelInfo[row.source_table].push({ column: row.source_column, target: row.target_table });
+          }
+          setRelationsInfo(newRelInfo);
+        } catch (e) {
+          console.warn("Failed to fetch relations info for autocompletion:", e);
+        }
       } catch (e) {
         console.warn("Failed to fetch database schema for autocompletion:", e);
       }
@@ -304,7 +326,116 @@ const SqlEditor: FC = () => {
     fetchSchema();
   }, [worker]);
 
-  const extensions = useMemo(() => [sqlLang({ schema })], [schema]);
+  const smartJoinCompletion = useCallback(
+    (context: CompletionContext): CompletionResult | null => {
+      // Match "JOIN" followed by optional whitespace and partial words
+      const word = context.matchBefore(/JOIN[\s\w"']*$/i);
+      if (!word) return null;
+
+      const tree = syntaxTree(context.state);
+
+      let lastTable = "";
+      let lastAlias = "";
+
+      // Iterate the tree to find the table/alias before the JOIN
+      tree.iterate({
+        from: 0,
+        to: word.from,
+        enter: (node) => {
+          if (node.name === "TableIdentifier" || node.name === "Identifier") {
+            let name = context.state.sliceDoc(node.from, node.to);
+            if (name.startsWith('"') && name.endsWith('"')) name = name.slice(1, -1);
+            if (name.startsWith("'") && name.endsWith("'")) name = name.slice(1, -1);
+
+            // If it's a known table, it's our base table
+            if (schema[name]) {
+              lastTable = name;
+              lastAlias = "";
+            } else {
+              // Otherwise it might be an alias for the last found table
+              const upper = name.toUpperCase();
+              if (
+                lastTable &&
+                upper !== "JOIN" &&
+                upper !== "FROM" &&
+                upper !== "SELECT" &&
+                name !== "*"
+              ) {
+                lastAlias = name;
+              }
+            }
+          } else if (node.name === "AliasIdentifier") {
+            lastAlias = context.state.sliceDoc(node.from, node.to);
+          }
+        },
+      });
+
+      const effectiveTable = lastAlias || lastTable;
+      const baseTable = lastTable; // The actual table name for relations lookup
+
+      if (!baseTable || !relationsInfo[baseTable]) return null;
+
+      const options = relationsInfo[baseTable].flatMap((rel) => {
+        const suggestions = [];
+
+        // Find the column type
+        const columnInfo = schema[baseTable].find((c) => c.name === rel.column);
+        const isJson = columnInfo?.type?.toLowerCase() === "json";
+
+        // Option A: Full join through relations (works for both 1:1 and 1:N)
+        const relAlias = `rel_${rel.column}`;
+        const targetAlias = `${rel.target.toLowerCase()}_${rel.column}`;
+
+        suggestions.push({
+          label: `JOIN via relations (${rel.column} → ${rel.target})`,
+          displayLabel: `JOIN via relations: ${rel.column} → ${rel.target}`,
+          apply: `JOIN relations ${relAlias} ON ${relAlias}.source_row = ${effectiveTable}.rowid AND ${relAlias}.source_table = '${baseTable}' AND ${relAlias}.source_column = '${rel.column}' JOIN ${rel.target} ${targetAlias} ON ${targetAlias}.rowid = ${relAlias}.target_row`,
+          type: "keyword",
+          detail: "Smart Join (handles 1:N)",
+        });
+
+        // Option B: Direct join (only for 1:1 / Many-to-One)
+        if (!isJson) {
+          suggestions.push({
+            label: `JOIN direct (${rel.column} → ${rel.target})`,
+            apply: `JOIN ${rel.target} ${targetAlias} ON ${targetAlias}.rowid = ${effectiveTable}.${rel.column}`,
+            type: "keyword",
+            detail: "Direct Join (Many-to-One)",
+          });
+        }
+
+        return suggestions;
+      });
+
+      return {
+        from: word.from,
+        options,
+      };
+    },
+    [relationsInfo, schema],
+  );
+
+  const schemaForLang = useMemo(() => {
+    const res: Record<string, string[]> = {};
+    for (const [table, cols] of Object.entries(schema)) {
+      res[table] = cols.map((c) => c.name);
+    }
+    return res;
+  }, [schema]);
+
+  const sqlSupport = useMemo(() => sqlLang({ schema: schemaForLang, dialect: SQLite }), [schemaForLang]);
+
+  const extensions = useMemo(
+    () => [
+      sqlSupport,
+      Prec.high(
+        sqlSupport.language.data.of({
+          autocomplete: smartJoinCompletion,
+        }),
+      ),
+    ],
+    [sqlSupport, smartJoinCompletion],
+  );
 
   const onChange = useCallback(
     (value: string) => {
@@ -318,6 +449,8 @@ const SqlEditor: FC = () => {
     <div
       className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm"
       data-testid="sql-editor"
+      data-schema-loaded={Object.keys(schema).length > 0}
+      data-relations-loaded={Object.keys(relationsInfo).length > 0}
     >
       <CodeMirror
         value={sql}
@@ -397,6 +530,7 @@ export const SQLViewer: FC<
 > = ({ url, initialSql, children = <SqlEditor /> }) => {
   const query = useSuspenseQuery(getDatabase(url));
   const [sql, setSql] = useState(initialSql || 'SELECT * FROM "English"');
+  const [debouncedSql, setDebouncedSql] = useState(sql);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10); // Default to 10 rows per page
   const [res, setRes] = useState<QueryExecResult[]>();
@@ -406,11 +540,18 @@ export const SQLViewer: FC<
   const navigation = useNavigate();
 
   useEffect(() => {
-    if (sql && sql !== initialSql) {
-      const next = location.clone().setQuery("sql", sql);
+    const timer = setTimeout(() => {
+      setDebouncedSql(sql);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [sql]);
+
+  useEffect(() => {
+    if (debouncedSql && debouncedSql !== initialSql) {
+      const next = location.clone().setQuery("sql", debouncedSql);
       navigation.navigate(String(next), { history: "replace" });
     }
-  }, [sql, location, navigation, initialSql]);
+  }, [debouncedSql, location, navigation, initialSql]);
 
   const [tableName, setTableName] = useState<string>();
 
@@ -437,6 +578,7 @@ export const SQLViewer: FC<
           if (
             !errorMsg.includes("near \"S\"") &&
             !errorMsg.includes("near \"SELECT\"") &&
+            !errorMsg.includes("near \"JOIN\"") &&
             !errorMsg.includes("incomplete input")
           ) {
             console.error("Query execution failed:", e);
