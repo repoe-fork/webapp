@@ -12,11 +12,14 @@ import {
   useMemo,
   useState,
   useEffect,
+  useCallback,
 } from "react";
 import {
   useLocation,
   useNavigate,
 } from "use-navigation-api";
+import CodeMirror from "@uiw/react-codemirror";
+import { sql as sqlLang } from "@codemirror/lang-sql";
 import { SearchWidget } from "./SearchWidget";
 import { Alert } from "components/ui/alert";
 import { Button } from "components/ui/button";
@@ -232,22 +235,98 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
   );
 };
 
-const BasicInput: FC = () => {
-  const { sql, setSql, setPage } = useContext(SQLContext);
+const SqlEditor: FC = () => {
+  const { sql, setSql, setPage, worker } = useContext(SQLContext);
+  const [schema, setSchema] = useState<Record<string, string[]>>({});
 
-  // Reset to first page when SQL changes
-  const handleSqlChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setSql(e.currentTarget.value);
-    setPage(0); // Reset to first page when query changes
-  };
+  useEffect(() => {
+    const fetchSchema = async () => {
+      if (!worker) return;
+      try {
+        const isVfs = worker.db && typeof worker.db.query === "function";
+        // Check if pragma_table_info is available
+        const hasPragmaTableInfo = async () => {
+            try {
+                if (isVfs) {
+                    await worker.db.query("SELECT * FROM pragma_table_info('relations') LIMIT 1");
+                } else {
+                    worker.db.exec("SELECT * FROM pragma_table_info('relations') LIMIT 1");
+                }
+                return true;
+            } catch (e) {
+                return false;
+            }
+        };
+
+        let rows: any[] = [];
+        if (await hasPragmaTableInfo()) {
+            const schemaSql =
+              "SELECT m.name as table_name, p.name as column_name FROM sqlite_master m JOIN pragma_table_info(m.name) p WHERE m.type='table' AND m.name NOT LIKE 'sqlite_%'";
+            if (isVfs) {
+              rows = await worker.db.query(schemaSql);
+            } else {
+              const stmt = worker.prepare(schemaSql);
+              while (stmt.step()) rows.push(stmt.getAsObject());
+              stmt.free();
+            }
+        } else {
+            // Fallback for older SQLite versions
+            const tableSql = "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'";
+            let tables: any[];
+            if (isVfs) {
+                tables = await worker.db.query(tableSql);
+            } else {
+                const stmt = worker.prepare(tableSql);
+                tables = [];
+                while (stmt.step()) tables.push(stmt.getAsObject());
+                stmt.free();
+            }
+            
+            for (const t of tables) {
+                const tableName = t.name;
+                // We can't easily get all columns for all tables without many queries here
+                // For now just add the table name with an empty column list to trigger table autocompletion
+                rows.push({ table_name: tableName, column_name: "" });
+            }
+        }
+
+        const newSchema: Record<string, string[]> = {};
+        for (const row of rows) {
+          if (!newSchema[row.table_name]) newSchema[row.table_name] = [];
+          if (row.column_name) newSchema[row.table_name].push(row.column_name);
+        }
+        console.log("Database schema fetched for autocompletion:", Object.keys(newSchema).length, "tables");
+        setSchema(newSchema);
+      } catch (e) {
+        console.warn("Failed to fetch database schema for autocompletion:", e);
+      }
+    };
+    fetchSchema();
+  }, [worker]);
+
+  const extensions = useMemo(() => [sqlLang({ schema })], [schema]);
+
+  const onChange = useCallback(
+    (value: string) => {
+      setSql(value);
+      setPage(0);
+    },
+    [setSql, setPage],
+  );
 
   return (
-    <textarea
-      className="min-h-[120px] w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm"
-      value={sql}
-      onChange={handleSqlChange}
-      rows={4}
-    />
+    <div
+      className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm"
+      data-testid="sql-editor"
+    >
+      <CodeMirror
+        value={sql}
+        height="120px"
+        extensions={extensions}
+        onChange={onChange}
+        className="text-sm"
+      />
+    </div>
   );
 };
 
@@ -315,7 +394,7 @@ export const SQLViewer: FC<
     url: string;
     initialSql?: string;
   }>
-> = ({ url, initialSql, children = <BasicInput /> }) => {
+> = ({ url, initialSql, children = <SqlEditor /> }) => {
   const query = useSuspenseQuery(getDatabase(url));
   const [sql, setSql] = useState(initialSql || 'SELECT * FROM "English"');
   const [page, setPage] = useState(0);
@@ -345,17 +424,29 @@ export const SQLViewer: FC<
   };
 
   useEffect(() => {
-    const fetchResults = async () => {
-      try {
-        setErr(undefined);
-        const results = await runQuery(query.data, sql, page, pageSize);
-        setRes(results);
-      } catch (e) {
-        console.error("Query execution failed:", e);
-        setErr(e);
-      }
-    };
-    fetchResults();
+    const timer = setTimeout(() => {
+      const fetchResults = async () => {
+        if (!sql.trim()) return;
+        try {
+          setErr(undefined);
+          const results = await runQuery(query.data, sql, page, pageSize);
+          setRes(results);
+        } catch (e: any) {
+          // Only show error if it's not a common "incomplete query" error while typing
+          const errorMsg = String(e);
+          if (
+            !errorMsg.includes("near \"S\"") &&
+            !errorMsg.includes("near \"SELECT\"") &&
+            !errorMsg.includes("incomplete input")
+          ) {
+            console.error("Query execution failed:", e);
+            setErr(e);
+          }
+        }
+      };
+      fetchResults();
+    }, 800); // Increased debounce to avoid errors while typing
+    return () => clearTimeout(timer);
   }, [query.data, sql, page, pageSize]);
 
   // Function to handle page changes

@@ -10,9 +10,9 @@ test("sql viewer url sync and reference navigation", async ({ page }) => {
   await expect(page.getByText("Loading...")).not.toBeVisible({ timeout: 60000 });
 
   // 1. Test URL sync when changing SQL
-  const textarea = page.locator("textarea");
+  const editor = page.getByTestId("sql-editor").locator(".cm-content");
   const initialSql = "SELECT * FROM relations LIMIT 1";
-  await textarea.fill(initialSql);
+  await editor.fill(initialSql);
   
   // Wait for relations table to load
   await expect(async () => {
@@ -32,7 +32,7 @@ test("sql viewer url sync and reference navigation", async ({ page }) => {
   console.log(`Found relation: ${sourceTable}.${sourceColumn} at row ${sourceRow}`);
 
   // Now go to that source table
-  await textarea.fill(`SELECT * FROM "${sourceTable}" WHERE rowid = ${sourceRow}`);
+  await editor.fill(`SELECT * FROM "${sourceTable}" WHERE rowid = ${sourceRow}`);
   
   // Wait for table to update by checking headers
   await expect(async () => {
@@ -54,8 +54,7 @@ test("sql viewer url sync and reference navigation", async ({ page }) => {
   await cellLink.click();
   
   // Verify SQL updated to target row
-  const currentSql = await textarea.inputValue();
-  expect(currentSql).toContain("WHERE rowid IN (SELECT target_row FROM relations");
+  await expect(editor).toContainText("WHERE rowid IN (SELECT target_row FROM relations", { timeout: 10000 });
   
   // Verify URL updated
   const encodedSubstr = "WHERE%20rowid%20IN%20(SELECT%20target_row%20FROM%20relations";

@@ -34,7 +34,7 @@ test("sqlite viewer fallback and progress", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Search" })).toBeVisible({ timeout: 60000 });
   
   // Verify it actually works by running a query
-  await page.locator("textarea").fill("SELECT * FROM English LIMIT 1");
+  await page.getByTestId("sql-editor").locator(".cm-content").fill("SELECT * FROM English LIMIT 1");
   
   await expect(page.locator("table")).toBeVisible();
   await expect(page.locator("table")).toContainText("Moeanu", { caseSensitive: false });
