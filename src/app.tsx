@@ -11,8 +11,9 @@ import { AreasPage, getAreas } from "routes/areas";
 import { SqlPage } from "routes/sql";
 import { AboutPage } from "routes/about";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { headerHeight } from "./state/headerHeight";
+import { dbLoadingProgress } from "./state/dbLoading";
 import ResizeObserver from "rc-resize-observer";
 
 type Tab = "home" | "areas" | "sql" | "about";
@@ -195,6 +196,26 @@ const AreaCombobox = () => {
   );
 };
 
+const LoadingProgress = () => {
+  const progress = useAtomValue(dbLoadingProgress);
+  if (!progress) return <div>Loading...</div>;
+
+  const percentage =
+    progress.total > 0 ? Math.round((progress.loaded / progress.total) * 100) : null;
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div>Loading...</div>
+      <div className="text-sm text-slate-500">
+        Downloading database:{" "}
+        {percentage !== null
+          ? `${percentage}%`
+          : `${(progress.loaded / 1024 / 1024).toFixed(1)} MB`}
+      </div>
+    </div>
+  );
+};
+
 export function App() {
   const location = useLocation();
   const params = useQueryParams(["tab", "game"]);
@@ -252,7 +273,7 @@ export function App() {
         </header>
       </ResizeObserver>
       <main className="mx-auto max-w-6xl px-4 py-4">
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<LoadingProgress />}>
           <AppContent tab={tab} />
         </Suspense>
       </main>

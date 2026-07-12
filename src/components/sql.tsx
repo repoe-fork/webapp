@@ -17,6 +17,8 @@ import { SearchWidget } from "./SearchWidget";
 import { Alert } from "components/ui/alert";
 import { Button } from "components/ui/button";
 import { createVfsDbWorker } from "../lib/sqlite-vfs";
+import { getDefaultStore } from "jotai";
+import { dbLoadingProgress } from "../state/dbLoading";
 
 const SQL = initSqlJs({ locateFile: () => wasm });
 
@@ -24,15 +26,47 @@ export const getDatabase = (url: string) =>
   queryOptions({
     queryKey: ["database", url],
     queryFn: async () => {
+      const store = getDefaultStore();
+      console.log("Fetching database from:", url);
       try {
-        return await createVfsDbWorker(url);
+        const db = await createVfsDbWorker(url);
+        console.log("VFS database loaded successfully");
+        return db;
       } catch (e) {
         console.warn("VFS failed, falling back to full download:", e);
-        return SQL.then(({ Database }) =>
-          fetch(url, { cache: "default" })
-            .then((r) => r.arrayBuffer())
-            .then((b) => new Database(new Uint8Array(b)))
-        );
+        const response = await fetch(url, { cache: "default" });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        const contentLength = response.headers.get("content-length");
+        const total = contentLength ? parseInt(contentLength, 10) : 0;
+        let loaded = 0;
+        store.set(dbLoadingProgress, { loaded, total, url });
+
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("Failed to get reader from response body");
+
+        const chunks: Uint8Array[] = [];
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          loaded += value.length;
+          store.set(dbLoadingProgress, { loaded, total, url });
+          // Yield to event loop to allow UI to update
+          await new Promise((r) => setTimeout(r, 0));
+        }
+
+        const b = new Uint8Array(loaded);
+        let offset = 0;
+        for (const chunk of chunks) {
+          b.set(chunk, offset);
+          offset += chunk.length;
+        }
+
+        const db = await SQL.then(({ Database }) => new Database(b));
+        console.log("Fallback database loaded successfully");
+        store.set(dbLoadingProgress, null);
+        return db;
       }
     },
   });
@@ -209,6 +243,7 @@ export const SQLViewer: FC<
         const results = await runQuery(query.data, sql, page, pageSize);
         setRes(results);
       } catch (e) {
+        console.error("Query execution failed:", e);
         setErr(e);
       }
     };
