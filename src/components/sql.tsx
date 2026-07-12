@@ -13,6 +13,10 @@ import {
   useState,
   useEffect,
 } from "react";
+import {
+  useLocation,
+  useNavigate,
+} from "use-navigation-api";
 import { SearchWidget } from "./SearchWidget";
 import { Alert } from "components/ui/alert";
 import { Button } from "components/ui/button";
@@ -82,6 +86,37 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
   result: { columns, values, tableName },
 }) => {
   const { worker, page, pageSize, setSql } = useContext(SQLContext);
+  const [relations, setRelations] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchRelations = async () => {
+      if (!tableName || values.length === 0) return;
+      const isVfs = worker.db && typeof worker.db.query === "function";
+      const rowIds = values.map((_, i) => page * pageSize + i);
+      const relSql = `SELECT DISTINCT source_column, target_table FROM relations WHERE source_table = '${tableName}' AND source_row IN (${rowIds.join(",")})`;
+
+      let rels: any[];
+      try {
+        if (isVfs) {
+          rels = await worker.db.query(relSql);
+        } else {
+          const stmt = worker.prepare(relSql);
+          rels = [];
+          while (stmt.step()) rels.push(stmt.getAsObject());
+          stmt.free();
+        }
+
+        const relMap: Record<string, string> = {};
+        for (const r of rels) {
+          relMap[r.source_column] = r.target_table;
+        }
+        setRelations(relMap);
+      } catch (e) {
+        console.warn("Failed to fetch relations:", e);
+      }
+    };
+    fetchRelations();
+  }, [tableName, values, page, pageSize, worker]);
 
   const findRelated = async (rowIndex: number) => {
     if (!tableName) return;
@@ -147,8 +182,26 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
           {values.map((row, rowIndex) => (
             <tr key={rowIndex} className="odd:bg-white even:bg-slate-50 hover:bg-blue-50">
               {row.map((value, cellIndex) => (
-                <td key={cellIndex} className="px-3 py-2 text-slate-700 whitespace-nowrap overflow-hidden max-w-[300px] text-ellipsis">
-                  {String(value)}
+                <td
+                  key={cellIndex}
+                  className="px-3 py-2 text-slate-700 whitespace-nowrap overflow-hidden max-w-[300px] text-ellipsis"
+                >
+                  {relations[columns[cellIndex]] ? (
+                    <button
+                      className="text-blue-600 hover:underline"
+                      onClick={() => {
+                        const targetTable = relations[columns[cellIndex]];
+                        const rowId = page * pageSize + rowIndex;
+                        setSql(
+                          `SELECT * FROM ${targetTable} WHERE rowid IN (SELECT target_row FROM relations WHERE source_table = '${tableName}' AND source_column = '${columns[cellIndex]}' AND source_row = ${rowId})`,
+                        );
+                      }}
+                    >
+                      {String(value)}
+                    </button>
+                  ) : (
+                    String(value)
+                  )}
                 </td>
               ))}
               <td className="px-3 py-2 text-center whitespace-nowrap">
@@ -260,14 +313,25 @@ async function runQuery(dbOrWorker: any, sql: string, page: number = 0, pageSize
 export const SQLViewer: FC<
   PropsWithChildren<{
     url: string;
+    initialSql?: string;
   }>
-> = ({ url, children = <BasicInput /> }) => {
+> = ({ url, initialSql, children = <BasicInput /> }) => {
   const query = useSuspenseQuery(getDatabase(url));
-  const [sql, setSql] = useState('SELECT * FROM "English"');
+  const [sql, setSql] = useState(initialSql || 'SELECT * FROM "English"');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10); // Default to 10 rows per page
   const [res, setRes] = useState<QueryExecResult[]>();
   const [err, setErr] = useState<any>();
+
+  const location = useLocation();
+  const navigation = useNavigate();
+
+  useEffect(() => {
+    if (sql && sql !== initialSql) {
+      const next = location.clone().setQuery("sql", sql);
+      navigation.navigate(String(next), { history: "replace" });
+    }
+  }, [sql, location, navigation, initialSql]);
 
   const [tableName, setTableName] = useState<string>();
 
