@@ -579,6 +579,7 @@ export const SQLViewer: FC<
             !errorMsg.includes("near \"S\"") &&
             !errorMsg.includes("near \"SELECT\"") &&
             !errorMsg.includes("near \"JOIN\"") &&
+            !errorMsg.includes("near \"LIMIT\"") &&
             !errorMsg.includes("incomplete input")
           ) {
             console.error("Query execution failed:", e);
