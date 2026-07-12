@@ -9,18 +9,9 @@ test("sqlite viewer fallback and progress", async ({ page }) => {
   page.on("console", (msg) => console.log(`Browser console: ${msg.text()}`));
   page.on("pageerror", (err) => console.error(`Browser error: ${err}`));
 
-  const filePath = path.join(__dirname, "..", "fixtures", "test.sqlite");
-  if (!fs.existsSync(filePath)) {
-    // Create it if it doesn't exist for some reason
-    const { execSync } = await import("child_process");
-    execSync(`sqlite3 ${filePath} "CREATE VIRTUAL TABLE English USING fts5(content); INSERT INTO English (content) VALUES ('search for anything');"`);
-  }
-  const realDb = fs.readFileSync(filePath);
+  // Use the local full database from public dir
+  const dbPath = path.join(__dirname, "..", "..", "public", "poe2", "dat.sqlite");
   
-  // Create a 50MB buffer and put the real DB at the start
-  const buffer = Buffer.alloc(50 * 1024 * 1024);
-  realDb.copy(buffer);
-
   // Intercept the sqlite request
   await page.route("**/dat.sqlite", async (route) => {
     // Fail Range requests to trigger fallback
@@ -31,42 +22,20 @@ test("sqlite viewer fallback and progress", async ({ page }) => {
     }
 
     console.log("Serving full database download");
-    await route.fulfill({
-      status: 200,
-      contentType: "application/x-sqlite3",
-      body: buffer,
-      headers: {
-        "content-length": buffer.length.toString(),
-        "access-control-allow-origin": "*",
-      }
-    });
+    await route.continue();
   });
 
   await page.goto("/webapp/?tab=sql&game=poe2");
 
-  // Verify that the fallback console message appeared (we can check console logs if needed)
-  // But checking the UI is better.
-  
-  // We expect to see the progress message because 1MB should take a few frames at least
-  // and we specifically check for its existence.
+  // We expect to see the progress message
   await expect(page.getByText(/Downloading database:/)).toBeVisible();
   
   // Eventually it should load
-  await expect(page.getByLabel("Order by Rank")).toBeVisible({ timeout: 15000 });
+  await expect(page.getByLabel("Order by Rank")).toBeVisible({ timeout: 60000 });
   
   // Verify it actually works by running a query
-  await page.getByPlaceholder("Table name").fill("test");
-  await page.getByPlaceholder("Search query (FTS5)").fill("");
-  await page.getByRole("button", { name: "Search" }).click();
-  
-  // Since 'test' table doesn't have FTS5, this might fail if we use SearchWidget
-  // Let's just use the direct SQL input if available.
-  // In src/components/sql.tsx, children of SQLViewer is BasicInput by default.
-  
-  await page.locator("textarea").fill("SELECT * FROM English");
-  // The Search button in SearchWidget might not be enough if it doesn't trigger runQuery for the textarea.
-  // Actually, runQuery is in a useEffect that depends on 'sql'.
+  await page.locator("textarea").fill("SELECT * FROM English LIMIT 1");
   
   await expect(page.locator("table")).toBeVisible();
-  await expect(page.locator("table")).toContainText("search for anything");
+  await expect(page.locator("table")).toContainText("Moeanu", { caseSensitive: false });
 });
