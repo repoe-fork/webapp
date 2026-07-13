@@ -120,13 +120,13 @@ export const Graph: React.FC<
         <div className="flex-1">
           {selectedRoomEntry ? (
             <div>
-              <p className="mb-1 text-xs text-slate-400">
+              <p className="mb-1 text-xs text-slate-500 font-medium">
                 {selectedRoom} preview (work in progress)
               </p>
               <Room roomPath={selectedRoomEntry.file} graph={graph} cellSize={44} detailed />
             </div>
           ) : (
-            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-400/50 bg-slate-950/20 p-6 text-sm text-slate-400">
+            <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600 font-medium">
               Select a room to preview it here.
             </div>
           )}
@@ -159,7 +159,7 @@ export const Graph: React.FC<
           <h3 className="text-lg font-semibold text-slate-900">Subgraphs</h3>
           {Object.entries(graph.subgraphs).map(([k, v]) => (
             <div key={k} className="mt-3 space-y-2">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-500">{k}</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-600">{k}</h4>
               {(v as any[]).map((f) => (
                 <Graph key={f} file={f} addNodes={addNodes} colorMap={colorMap} />
               ))}

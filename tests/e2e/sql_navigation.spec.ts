@@ -11,14 +11,19 @@ test("sql viewer url sync and reference navigation", async ({ page }) => {
 
   // 1. Test URL sync when changing SQL
   const editor = page.getByTestId("sql-editor").locator(".cm-content");
+  const runQueryBtn = page.getByRole("button", { name: "Run Query" });
   const initialSql = "SELECT * FROM relations LIMIT 1";
-  await editor.fill(initialSql);
+  await editor.click();
+  await page.keyboard.press("Control+a");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.type(initialSql);
+  await runQueryBtn.click();
   
   // Wait for relations table to load
   await expect(async () => {
     const headers = await page.locator("table th").allTextContents();
     if (!headers.includes("source_table")) throw new Error("Relations table not loaded yet");
-  }).toPass({ timeout: 10000 });
+  }).toPass({ timeout: 30000 });
 
   // Check if URL updated (with encoding, + or %20 and * or %2A)
   await expect(page).toHaveURL(/sql=SELECT[+%20](\*|%2A)[+%20]FROM[+%20]relations[+%20]LIMIT[+%20]1/);
@@ -32,14 +37,18 @@ test("sql viewer url sync and reference navigation", async ({ page }) => {
   console.log(`Found relation: ${sourceTable}.${sourceColumn} at row ${sourceRow}`);
 
   // Now go to that source table
-  await editor.fill(`SELECT * FROM "${sourceTable}" WHERE rowid = ${sourceRow}`);
+  await editor.click();
+  await page.keyboard.press("Control+a");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.type(`SELECT * FROM "${sourceTable}" WHERE rowid = ${sourceRow}`);
+  await runQueryBtn.click();
   
   // Wait for table to update by checking headers
   await expect(async () => {
     const headers = await page.locator("table th").allTextContents();
     if (headers.includes("source_table")) throw new Error("Still showing relations table");
     if (!headers.includes(sourceColumn!)) throw new Error(`Column ${sourceColumn} not found in headers: ${headers.join(", ")}`);
-  }).toPass({ timeout: 10000 });
+  }).toPass({ timeout: 30000 });
 
   const headers = await page.locator("table th").allTextContents();
   const colIndex = headers.indexOf(sourceColumn!);

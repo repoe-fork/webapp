@@ -14,7 +14,7 @@ export const ColorLegend: React.FC<{
     <div className="rounded-md border border-slate-200 bg-white p-3">
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-slate-900">{title}</h3>
-        <span className="text-xs text-slate-500">{items.length} entries</span>
+        <span className="text-xs text-slate-500 font-medium">{items.length} entries</span>
       </div>
       <ul className="mt-3 grid grid-cols-1 gap-2">
         {items.map((item) => (

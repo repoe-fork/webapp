@@ -80,7 +80,7 @@ export const GraphOverviewCard: React.FC<{
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-slate-900">{file}</p>
-            <p className="text-xs text-slate-500">No nodes</p>
+            <p className="text-xs text-slate-600 font-medium">No nodes</p>
           </div>
           <Button variant="outline" onClick={setFocus}>
             Focus
@@ -102,7 +102,7 @@ export const GraphOverviewCard: React.FC<{
               <p className="truncate text-sm font-semibold text-slate-900" title={file}>
                 {file.split("/").pop()}
               </p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-600 font-medium">
                 {roomCount} rooms · {graph.nodes.length} nodes · {graph.edges.length} edges
                 {subgraphCount ? ` · ${subgraphCount} subgraphs` : ""}
               </p>

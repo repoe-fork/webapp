@@ -18,7 +18,7 @@ import {
   useLocation,
   useNavigate,
 } from "use-navigation-api";
-import CodeMirror from "@uiw/react-codemirror";
+import CodeMirror, { keymap } from "@uiw/react-codemirror";
 import { sql as sqlLang, SQLite } from "@codemirror/lang-sql";
 import { syntaxTree } from "@codemirror/language";
 import { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
@@ -89,17 +89,45 @@ type QueryExecResult = {
 };
 
 const ResultTable: FC<{ result: QueryExecResult }> = ({
-  result: { columns, values, tableName },
+  result: { columns, values, tableName: resultTableName },
 }) => {
-  const { worker, page, pageSize, setSql } = useContext(SQLContext);
+  const { worker, page, pageSize, setSql, onNavigate } = useContext(SQLContext);
   const [relations, setRelations] = useState<Record<string, string>>({});
+
+  const tableColIndex = columns.indexOf("table");
+  const rowColIndex = columns.indexOf("row");
+
+  const sourceTableColIndex = columns.indexOf("source_table");
+  const sourceRowColIndex = columns.indexOf("source_row");
+
+  const getTargetTable = (rowIndex: number) => {
+    if (tableColIndex !== -1) return String(values[rowIndex][tableColIndex]);
+    if (resultTableName === "relations" && sourceTableColIndex !== -1)
+      return String(values[rowIndex][sourceTableColIndex]);
+    return resultTableName;
+  };
+
+  const getTargetRowId = (rowIndex: number) => {
+    if (rowColIndex !== -1) return Number(values[rowIndex][rowColIndex]);
+    if (resultTableName === "relations" && sourceRowColIndex !== -1)
+      return Number(values[rowIndex][sourceRowColIndex]);
+    return page * pageSize + rowIndex;
+  };
 
   useEffect(() => {
     const fetchRelations = async () => {
-      if (!tableName || values.length === 0) return;
+      if (values.length === 0) return;
       const isVfs = worker.db && typeof worker.db.query === "function";
-      const rowIds = values.map((_, i) => page * pageSize + i);
-      const relSql = `SELECT DISTINCT source_column, target_table FROM relations WHERE source_table = '${tableName}' AND source_row IN (${rowIds.join(",")})`;
+
+      let relSql: string;
+      if (tableColIndex !== -1 && rowColIndex !== -1) {
+        const uniqueTables = Array.from(new Set(values.map((v) => String(v[tableColIndex]))));
+        relSql = `SELECT DISTINCT source_table, source_column, target_table FROM relations WHERE source_table IN (${uniqueTables.map((t) => `'${t}'`).join(",")})`;
+      } else {
+        if (!resultTableName) return;
+        const rowIds = values.map((_, i) => page * pageSize + i);
+        relSql = `SELECT DISTINCT source_column, target_table FROM relations WHERE source_table = '${resultTableName}' AND source_row IN (${rowIds.join(",")})`;
+      }
 
       let rels: any[];
       try {
@@ -122,24 +150,28 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
       }
     };
     fetchRelations();
-  }, [tableName, values, page, pageSize, worker]);
+  }, [resultTableName, values, page, pageSize, worker, tableColIndex, rowColIndex]);
 
   const findRelated = async (rowIndex: number) => {
-    if (!tableName) return;
-    const sourceRowId = page * pageSize + rowIndex;
+    const targetTable = getTargetTable(rowIndex);
+    const targetRowId = getTargetRowId(rowIndex);
+    if (!targetTable) return;
 
-    // Check if worker is VFS or Database
+    if (resultTableName === "relations") {
+      const newSql = `SELECT * FROM "${targetTable}" WHERE rowid = ${targetRowId}`;
+      setSql(newSql);
+      onNavigate(newSql);
+      return;
+    }
+
     const isVfs = worker.db && typeof worker.db.query === "function";
 
     let related: any[];
+    const query = `SELECT * FROM relations WHERE source_table = '${targetTable}' AND source_row = ${targetRowId}`;
     if (isVfs) {
-      related = await worker.db.query(
-        `SELECT * FROM relations WHERE source_table = '${tableName}' AND source_row = ${sourceRowId}`,
-      );
+      related = await worker.db.query(query);
     } else {
-      const stmt = worker.prepare(
-        `SELECT * FROM relations WHERE source_table = '${tableName}' AND source_row = ${sourceRowId}`,
-      );
+      const stmt = worker.prepare(query);
       related = [];
       while (stmt.step()) {
         related.push(stmt.getAsObject());
@@ -148,59 +180,66 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
     }
     console.log("Related rows:", related);
     if (related.length > 0) {
-      // Find the first target and show it
       const { target_table, target_row } = related[0];
-      setSql(`SELECT * FROM ${target_table} WHERE rowid = ${target_row}`);
+      const newSql = `SELECT * FROM ${target_table} WHERE rowid = ${target_row}`;
+      setSql(newSql);
+      onNavigate(newSql);
     } else {
       alert("No related rows found");
     }
   };
 
   const findReferencing = async (rowIndex: number) => {
-    if (!tableName) return;
-    const sourceRowId = page * pageSize + rowIndex;
-    setSql(`SELECT * FROM relations WHERE target_table = '${tableName}' AND target_row = ${sourceRowId}`);
+    const targetTable = getTargetTable(rowIndex);
+    const targetRowId = getTargetRowId(rowIndex);
+    if (!targetTable) return;
+    const newSql = `SELECT * FROM relations WHERE target_table = '${targetTable}' AND target_row = ${targetRowId}`;
+    setSql(newSql);
+    onNavigate(newSql);
   };
 
   const handleSort = (column: string) => {
-    if (!tableName) return;
-    setSql(`SELECT * FROM ${tableName} ORDER BY "${column}"`);
+    if (!resultTableName) return;
+    const newSql = `SELECT * FROM "${resultTableName}" ORDER BY "${column}"`;
+    setSql(newSql);
+    onNavigate(newSql);
   };
 
   return (
-    <div className="overflow-auto rounded-lg border border-slate-200">
-      <table className="min-w-full text-left text-sm">
-        <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-500">
+    <div className="overflow-auto rounded-lg border border-slate-200 bg-white shadow-sm max-h-[600px]">
+      <table className="min-w-full text-left text-sm border-separate border-spacing-0">
+        <thead className="sticky top-0 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-600 shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
           <tr>
             {columns.map((columnName) => (
               <th
                 key={columnName}
-                className="cursor-pointer px-3 py-2 font-semibold hover:bg-slate-200"
+                className="cursor-pointer px-4 py-3 border-b border-slate-200 hover:bg-slate-100 transition-colors"
                 onClick={() => handleSort(columnName)}
               >
                 {columnName}
               </th>
             ))}
-            <th className="px-3 py-2 font-semibold text-center">Actions</th>
+            <th className="px-4 py-3 border-b border-slate-200 text-center">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200">
+        <tbody className="divide-y divide-slate-100">
           {values.map((row, rowIndex) => (
-            <tr key={rowIndex} className="odd:bg-white even:bg-slate-50 hover:bg-blue-50">
+            <tr key={rowIndex} className="hover:bg-blue-50/50 transition-colors group">
               {row.map((value, cellIndex) => (
                 <td
                   key={cellIndex}
-                  className="px-3 py-2 text-slate-700 whitespace-nowrap overflow-hidden max-w-[300px] text-ellipsis"
+                  className="px-4 py-2 text-slate-700 whitespace-nowrap overflow-hidden max-w-[400px] text-ellipsis border-b border-slate-50"
                 >
                   {relations[columns[cellIndex]] ? (
                     <button
-                      className="text-blue-600 hover:underline"
+                      className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
                       onClick={() => {
                         const targetTable = relations[columns[cellIndex]];
-                        const rowId = page * pageSize + rowIndex;
-                        setSql(
-                          `SELECT * FROM ${targetTable} WHERE rowid IN (SELECT target_row FROM relations WHERE source_table = '${tableName}' AND source_column = '${columns[cellIndex]}' AND source_row = ${rowId})`,
-                        );
+                        const rowId = getTargetRowId(rowIndex);
+                        const sourceTable = getTargetTable(rowIndex);
+                        const newSql = `SELECT * FROM "${targetTable}" WHERE rowid IN (SELECT target_row FROM relations WHERE source_table = '${sourceTable}' AND source_column = '${columns[cellIndex]}' AND source_row = ${rowId})`;
+                        setSql(newSql);
+                        onNavigate(newSql);
                       }}
                     >
                       {String(value)}
@@ -210,23 +249,51 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
                   )}
                 </td>
               ))}
-              <td className="px-3 py-2 text-center whitespace-nowrap">
-                <div className="flex gap-2 justify-center">
+              <td className="px-4 py-2 text-center whitespace-nowrap border-b border-slate-50">
+                <div className="flex gap-1 justify-center opacity-40 group-hover:opacity-100 transition-opacity">
                   <Button
                     variant="ghost"
                     size="sm"
-                    title="Find target row"
+                    className="h-7 w-7 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    title="Find related (target) row"
                     onClick={() => findRelated(rowIndex)}
                   >
-                    →
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="h-7 w-7 p-0 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
                     title="Find referencing rows"
                     onClick={() => findReferencing(rowIndex)}
                   >
-                    ←
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.8 8.5 8.5 0 0 1 6.3 2.7l-3.3 3.3H21V3l-3.3 3.3" />
+                    </svg>
                   </Button>
                 </div>
               </td>
@@ -239,7 +306,7 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
 };
 
 const SqlEditor: FC = () => {
-  const { sql, setSql, setPage, worker } = useContext(SQLContext);
+  const { sql, setSql, setPage, worker, onRunQuery } = useContext(SQLContext);
   const [schema, setSchema] = useState<Record<string, { name: string; type: string }[]>>({});
   const [relationsInfo, setRelationsInfo] = useState<Record<string, { column: string; target: string }[]>>({});
 
@@ -433,8 +500,24 @@ const SqlEditor: FC = () => {
           autocomplete: smartJoinCompletion,
         }),
       ),
+      keymap.of([
+        {
+          key: "Ctrl-Enter",
+          run: () => {
+            onRunQuery();
+            return true;
+          },
+        },
+        {
+          key: "Cmd-Enter",
+          run: () => {
+            onRunQuery();
+            return true;
+          },
+        },
+      ]),
     ],
-    [sqlSupport, smartJoinCompletion],
+    [sqlSupport, smartJoinCompletion, onRunQuery],
   );
 
   const onChange = useCallback(
@@ -471,6 +554,8 @@ export const SQLContext = createContext<{
   pageSize: number;
   setPageSize: Dispatch<SetStateAction<number>>;
   worker: any;
+  onNavigate: (newSql: string) => void;
+  onRunQuery: () => void;
 }>(null as any);
 
 async function runQuery(dbOrWorker: any, sql: string, page: number = 0, pageSize: number = 0) {
@@ -530,67 +615,85 @@ export const SQLViewer: FC<
 > = ({ url, initialSql, children = <SqlEditor /> }) => {
   const query = useSuspenseQuery(getDatabase(url));
   const [sql, setSql] = useState(initialSql || 'SELECT * FROM "English"');
-  const [debouncedSql, setDebouncedSql] = useState(sql);
+  const [committedSql, setCommittedSql] = useState(sql);
   const [page, setPage] = useState(0);
+
+  useEffect(() => {
+    const nextSql = initialSql || 'SELECT * FROM "English"';
+    if (nextSql !== sql) {
+      setSql(nextSql);
+      setCommittedSql(nextSql);
+    }
+  }, [initialSql]);
   const [pageSize, setPageSize] = useState(10); // Default to 10 rows per page
   const [res, setRes] = useState<QueryExecResult[]>();
   const [err, setErr] = useState<any>();
+  const [languages, setLanguages] = useState<string[]>(["English"]);
 
   const location = useLocation();
   const navigation = useNavigate();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSql(sql);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [sql]);
+  const onNavigate = useCallback(
+    (newSql: string) => {
+      setCommittedSql(newSql);
+      const next = location.clone().setQuery("sql", newSql);
+      navigation.navigate(String(next), { history: "push" });
+    },
+    [location, navigation],
+  );
 
   useEffect(() => {
-    if (debouncedSql && debouncedSql !== initialSql) {
-      const next = location.clone().setQuery("sql", debouncedSql);
-      navigation.navigate(String(next), { history: "replace" });
-    }
-  }, [debouncedSql, location, navigation, initialSql]);
+    const fetchLanguages = async () => {
+      if (!query.data) return;
+      try {
+        const isVfs = query.data.db && typeof query.data.db.query === "function";
+        const langSql = "SELECT name FROM sqlite_master WHERE type='table' AND sql LIKE '%FTS5%'";
+        let rows: any[];
+        if (isVfs) {
+          rows = await query.data.db.query(langSql);
+        } else {
+          const stmt = query.data.prepare(langSql);
+          rows = [];
+          while (stmt.step()) rows.push(stmt.getAsObject());
+          stmt.free();
+        }
+        if (rows.length > 0) {
+          setLanguages(rows.map((r) => r.name));
+        }
+      } catch (e) {
+        console.warn("Failed to fetch languages:", e);
+      }
+    };
+    fetchLanguages();
+  }, [query.data]);
 
-  const [tableName, setTableName] = useState<string>();
-
-  const handleSearch = (table: string, query: string) => {
-    const ftsSql = query
-      ? `SELECT * FROM ${table} WHERE ${table} MATCH '${query}' ORDER BY rank`
+  const handleSearch = (table: string, queryText: string) => {
+    const ftsSql = queryText
+      ? `SELECT * FROM ${table} WHERE ${table} MATCH '${queryText}' ORDER BY rank`
       : `SELECT * FROM ${table}`;
     setSql(ftsSql);
-    setTableName(table);
     setPage(0);
+    onNavigate(ftsSql);
+  };
+
+  const handleRunQuery = () => {
+    onNavigate(sql);
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const fetchResults = async () => {
-        if (!sql.trim()) return;
-        try {
-          setErr(undefined);
-          const results = await runQuery(query.data, sql, page, pageSize);
-          setRes(results);
-        } catch (e: any) {
-          // Only show error if it's not a common "incomplete query" error while typing
-          const errorMsg = String(e);
-          if (
-            !errorMsg.includes("near \"S\"") &&
-            !errorMsg.includes("near \"SELECT\"") &&
-            !errorMsg.includes("near \"JOIN\"") &&
-            !errorMsg.includes("near \"LIMIT\"") &&
-            !errorMsg.includes("incomplete input")
-          ) {
-            console.error("Query execution failed:", e);
-            setErr(e);
-          }
-        }
-      };
-      fetchResults();
-    }, 800); // Increased debounce to avoid errors while typing
-    return () => clearTimeout(timer);
-  }, [query.data, sql, page, pageSize]);
+    const fetchResults = async () => {
+      if (!committedSql.trim()) return;
+      try {
+        setErr(undefined);
+        const results = await runQuery(query.data, committedSql, page, pageSize);
+        setRes(results);
+      } catch (e: any) {
+        console.error("Query execution failed:", e);
+        setErr(e);
+      }
+    };
+    fetchResults();
+  }, [query.data, committedSql, page, pageSize]);
 
   // Function to handle page changes
   const handleNextPage = () => {
@@ -606,25 +709,66 @@ export const SQLViewer: FC<
   const hasMorePages = hasResults && res[0].values.length === pageSize;
 
   return (
-    <SQLContext value={{ sql, setSql, page, setPage, pageSize, setPageSize, worker: query.data }}>
-      <div className="space-y-4">
-        <SearchWidget onSearch={handleSearch} />
-        {children}
-        {err ? <Alert variant="destructive">{String(err)}</Alert> : null}
-        {res?.map((r, i) => (
-          <ResultTable key={i} result={r} />
-        ))}
+    <SQLContext
+      value={{
+        sql,
+        setSql,
+        page,
+        setPage,
+        pageSize,
+        setPageSize,
+        worker: query.data,
+        onNavigate,
+        onRunQuery: handleRunQuery,
+      }}
+    >
+      <div className="space-y-6">
+        <SearchWidget
+          languages={languages}
+          onSearch={handleSearch}
+          onRunQuery={handleRunQuery}
+        />
+        <div className="space-y-2">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">SQL Query</h3>
+            <span className="text-xs text-slate-500 font-medium">Ctrl+Enter to run</span>
+          </div>
+          {children}
+        </div>
+        {err ? (
+          <Alert variant="destructive" className="animate-in fade-in duration-300">
+            {String(err)}
+          </Alert>
+        ) : null}
+        <div className="space-y-2">
+          {res && res.length > 0 && (
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Results</h3>
+              <span className="text-xs text-slate-500 font-medium">
+                Showing {res[0].values.length} rows
+              </span>
+            </div>
+          )}
+          {res?.map((r, i) => (
+            <ResultTable key={i} result={r} />
+          ))}
+        </div>
       </div>
 
       {/* Pagination controls */}
       {pageSize > 0 && (
-        <div className="mt-4 flex items-center justify-between">
-          <Button variant="outline" onClick={handlePrevPage} disabled={page === 0}>
-            Previous page
+        <div className="mt-8 flex items-center justify-between bg-slate-50 p-4 rounded-lg border border-slate-200">
+          <Button variant="outline" size="sm" onClick={handlePrevPage} disabled={page === 0}>
+            Previous
           </Button>
-          <span className="text-sm text-slate-600">Page {page + 1}</span>
-          <Button variant="outline" onClick={handleNextPage} disabled={!hasMorePages}>
-            Next page
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-600 uppercase tracking-tighter">Page</span>
+            <span className="flex items-center justify-center h-7 w-7 rounded bg-white border border-slate-200 text-sm font-bold text-blue-600 shadow-sm">
+              {page + 1}
+            </span>
+          </div>
+          <Button variant="outline" size="sm" onClick={handleNextPage} disabled={!hasMorePages}>
+            Next
           </Button>
         </div>
       )}
