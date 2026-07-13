@@ -13,12 +13,12 @@ test("sqlite viewer loads and basic interaction", async ({ page }) => {
   await expect(page.getByText("Loading...")).not.toBeVisible({ timeout: 60000 });
 
   // Verify the search widget is present
-  const searchButton = page.getByRole("button", { name: "Search Text" });
+  const searchButton = page.getByRole("button", { name: "Run Query" });
   await expect(searchButton).toBeVisible({ timeout: 10000 });
 
   // Perform search
   await page.locator("select").selectOption("English");
-  await page.getByPlaceholder("Search database text (FTS5)...").fill("search");
+  await page.getByPlaceholder("Find English text in any .dat file...").fill("search");
   await searchButton.click();
 
   // Verify result table appears

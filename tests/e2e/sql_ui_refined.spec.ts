@@ -6,7 +6,6 @@ test("sql ui refinement: language dropdown, explicit updates, and history", asyn
   const searchWidget = page.getByTestId("search-widget");
   const langDropdown = searchWidget.locator("select");
   const searchInput = searchWidget.locator("input");
-  const searchTextBtn = searchWidget.getByRole("button", { name: "Search Text" });
   const runQueryBtn = searchWidget.getByRole("button", { name: "Run Query" });
   
   // 1. Verify language dropdown
@@ -35,7 +34,7 @@ test("sql ui refinement: language dropdown, explicit updates, and history", asyn
 
   // Search Text - should update URL
   await searchInput.fill("testing the game");
-  await searchTextBtn.click();
+  await runQueryBtn.click();
   await expect(page).toHaveURL(/sql=SELECT(\+|%20).+(%22|")?English(%22|")?(\+|%20)WHERE(\+|%20).+MATCH(\+|%20)(%27|')testing(\+|%20)the(\+|%20)game(%27|')/);
   const urlAfterSearch = page.url();
 

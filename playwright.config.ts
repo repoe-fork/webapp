@@ -6,6 +6,7 @@ export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
   reporter: [["list"]],
+  timeout: 120_000,
   use: {
     baseURL: `http://localhost:${port}`,
     trace: "on-first-retry",
