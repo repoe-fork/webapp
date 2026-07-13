@@ -34,12 +34,16 @@ jobs:
         run: ./generate-types.sh
       - name: run unit tests
         run: npm run test
+      - name: download db files
+        run: |
+          mkdir -p public/poe1
+          mkdir -p public/poe2
+          curl -o public/poe1/dat.sqlite https://repoe-fork.github.io/dat-export/poe1/dat.sqlite
+          curl -o public/poe2/dat.sqlite https://repoe-fork.github.io/dat-export/poe2/dat.sqlite
       - name: install playwright browsers
         run: npx playwright install --with-deps
-        if: false
       - name: run e2e tests
         run: npm run e2e
-        if: false
       - name: build app
         run: npm run build
       - name: upload pages
