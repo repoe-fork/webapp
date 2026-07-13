@@ -8,6 +8,9 @@ export default defineConfig({
   resolve: {
     tsconfigPaths: true,
   },
+  server: {
+    host: true
+  },
   test: {
     exclude: [
       "**/node_modules/**",

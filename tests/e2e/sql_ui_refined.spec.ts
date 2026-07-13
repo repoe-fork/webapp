@@ -36,7 +36,7 @@ test("sql ui refinement: language dropdown, explicit updates, and history", asyn
   // Search Text - should update URL
   await searchInput.fill("testing the game");
   await searchTextBtn.click();
-  await expect(page).toHaveURL(/sql=SELECT(\+|%20).+English(\+|%20)WHERE(\+|%20).+MATCH(\+|%20)(%27|')testing(\+|%20)the(\+|%20)game(%27|')/);
+  await expect(page).toHaveURL(/sql=SELECT(\+|%20).+(%22|")?English(%22|")?(\+|%20)WHERE(\+|%20).+MATCH(\+|%20)(%27|')testing(\+|%20)the(\+|%20)game(%27|')/);
   const urlAfterSearch = page.url();
 
   // 3. Verify history (Back button)

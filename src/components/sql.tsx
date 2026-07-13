@@ -91,14 +91,16 @@ type QueryExecResult = {
 const ResultTable: FC<{ result: QueryExecResult }> = ({
   result: { columns, values, tableName: resultTableName },
 }) => {
-  const { worker, page, pageSize, setSql, onNavigate } = useContext(SQLContext);
+  const { worker, page, pageSize, setSql, onNavigate, languages } = useContext(SQLContext);
   const [relations, setRelations] = useState<Record<string, string>>({});
 
   const tableColIndex = columns.indexOf("table");
-  const rowColIndex = columns.indexOf("row");
+  const rowColIndex = columns.findIndex(c => c.toLowerCase() === "row" || c.toLowerCase() === "rowid");
 
   const sourceTableColIndex = columns.indexOf("source_table");
   const sourceRowColIndex = columns.indexOf("source_row");
+
+  const isFtsTable = resultTableName && languages.includes(resultTableName);
 
   const getTargetTable = (rowIndex: number) => {
     if (tableColIndex !== -1) return String(values[rowIndex][tableColIndex]);
@@ -125,7 +127,7 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
         relSql = `SELECT DISTINCT source_table, source_column, target_table FROM relations WHERE source_table IN (${uniqueTables.map((t) => `'${t}'`).join(",")})`;
       } else {
         if (!resultTableName) return;
-        const rowIds = values.map((_, i) => page * pageSize + i);
+        const rowIds = values.map((_, i) => getTargetRowId(i));
         relSql = `SELECT DISTINCT source_column, target_table FROM relations WHERE source_table = '${resultTableName}' AND source_row IN (${rowIds.join(",")})`;
       }
 
@@ -157,8 +159,8 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
     const targetRowId = getTargetRowId(rowIndex);
     if (!targetTable) return;
 
-    if (resultTableName === "relations") {
-      const newSql = `SELECT * FROM "${targetTable}" WHERE rowid = ${targetRowId}`;
+    if (resultTableName === "relations" || isFtsTable) {
+      const newSql = `SELECT rowid, * FROM "${targetTable}" WHERE rowid = ${targetRowId}`;
       setSql(newSql);
       onNavigate(newSql);
       return;
@@ -181,7 +183,7 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
     console.log("Related rows:", related);
     if (related.length > 0) {
       const { target_table, target_row } = related[0];
-      const newSql = `SELECT * FROM ${target_table} WHERE rowid = ${target_row}`;
+      const newSql = `SELECT rowid, * FROM "${target_table}" WHERE rowid = ${target_row}`;
       setSql(newSql);
       onNavigate(newSql);
     } else {
@@ -200,7 +202,9 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
 
   const handleSort = (column: string) => {
     if (!resultTableName) return;
-    const newSql = `SELECT * FROM "${resultTableName}" ORDER BY "${column}"`;
+    const isFts = languages.includes(resultTableName);
+    const selectClause = isFts ? "*" : "rowid, *";
+    const newSql = `SELECT ${selectClause} FROM "${resultTableName}" ORDER BY "${column}"`;
     setSql(newSql);
     onNavigate(newSql);
   };
@@ -556,6 +560,7 @@ export const SQLContext = createContext<{
   worker: any;
   onNavigate: (newSql: string) => void;
   onRunQuery: () => void;
+  languages: string[];
 }>(null as any);
 
 async function runQuery(dbOrWorker: any, sql: string, page: number = 0, pageSize: number = 0) {
@@ -598,7 +603,8 @@ async function runQuery(dbOrWorker: any, sql: string, page: number = 0, pageSize
 
     // Add the result to the results array
     if (columns.length > 0) {
-      results.push({ columns, values, tableName: sql.match(/FROM\s+["']?([A-Za-z0-9_]+)["']?/i)?.[1] });
+      const tableName = sql.match(/FROM\s+["']?([A-Za-z0-9_]+)["']?/i)?.[1];
+      results.push({ columns, values, tableName });
     }
   } catch (e) {
     throw e;
@@ -646,14 +652,12 @@ export const SQLViewer: FC<
     const fetchLanguages = async () => {
       if (!query.data) return;
       try {
-        const isVfs = query.data.db && typeof query.data.db.query === "function";
         const langSql = "SELECT name FROM sqlite_master WHERE type='table' AND sql LIKE '%FTS5%'";
-        let rows: any[];
-        if (isVfs) {
+        let rows: any[] = [];
+        if ('db' in query.data && typeof query.data.db.query === "function") {
           rows = await query.data.db.query(langSql);
-        } else {
+        } else if ('prepare' in query.data) {
           const stmt = query.data.prepare(langSql);
-          rows = [];
           while (stmt.step()) rows.push(stmt.getAsObject());
           stmt.free();
         }
@@ -664,13 +668,13 @@ export const SQLViewer: FC<
         console.warn("Failed to fetch languages:", e);
       }
     };
-    fetchLanguages();
+    fetchLanguages().catch(console.error);
   }, [query.data]);
 
   const handleSearch = (table: string, queryText: string) => {
     const ftsSql = queryText
-      ? `SELECT * FROM ${table} WHERE ${table} MATCH '${queryText}' ORDER BY rank`
-      : `SELECT * FROM ${table}`;
+      ? `SELECT * FROM "${table}" WHERE "${table}" MATCH '${queryText.replace(/'/g, "''")}' ORDER BY rank`
+      : `SELECT * FROM "${table}"`;
     setSql(ftsSql);
     setPage(0);
     onNavigate(ftsSql);
@@ -720,6 +724,7 @@ export const SQLViewer: FC<
         worker: query.data,
         onNavigate,
         onRunQuery: handleRunQuery,
+        languages,
       }}
     >
       <div className="space-y-6">
@@ -736,7 +741,7 @@ export const SQLViewer: FC<
           {children}
         </div>
         {err ? (
-          <Alert variant="destructive" className="animate-in fade-in duration-300">
+          <Alert variant="destructive">
             {String(err)}
           </Alert>
         ) : null}
