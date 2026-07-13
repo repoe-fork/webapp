@@ -1,19 +1,13 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
-import {
-  useLocation,
-  useLocationWithParams,
-  useNavigate,
-  useQueryParam,
-  useQueryParams,
-} from "use-navigation-api";
+import { useLocation, useNavigate, useQueryParam, useQueryParams } from "use-navigation-api";
 import { HomePage } from "routes";
 import { AreasPage, getAreas } from "routes/areas";
 import { SqlPage } from "routes/sql";
 import { AboutPage } from "routes/about";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useAtom, useAtomValue } from "jotai";
-import { headerHeight } from "./state/headerHeight";
-import { dbLoadingProgress } from "./state/dbLoading";
+import { headerHeight } from "state/headerHeight";
+import { dbLoadingProgress } from "state/dbLoading";
 import ResizeObserver from "rc-resize-observer";
 
 type Tab = "home" | "areas" | "sql" | "about";
@@ -21,10 +15,8 @@ type Tab = "home" | "areas" | "sql" | "about";
 const NavLink = ({ label, href, active }: { label: string; href: string; active: boolean }) => (
   <a
     href={href}
-    className={`px-4 py-2 text-sm font-semibold transition-all border-b-2 ${
-      active
-        ? "border-blue-600 text-blue-600 bg-blue-50/50"
-        : "border-transparent text-slate-600 hover:text-slate-800 hover:bg-slate-50"
+    className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+      active ? "bg-slate-900 text-white" : "text-slate-700 hover:bg-slate-100"
     }`}>
     {label}
   </a>
@@ -45,21 +37,21 @@ const GameToggle = () => {
   };
 
   return (
-    <div className="flex items-center rounded-lg border border-slate-200 bg-slate-50/50 p-1 shadow-inner">
+    <div className="flex items-center rounded-full border border-slate-200 bg-slate-50 p-1">
       <a
         href={toggleGame("poe1")}
-        className={`rounded-md px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${
+        className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition-colors ${
           game === "poe1"
-            ? "bg-white text-blue-600 shadow-sm ring-1 ring-slate-200"
+            ? "bg-white text-slate-900 shadow-sm"
             : "text-slate-500 hover:text-slate-700"
         }`}>
         PoE 1
       </a>
       <a
         href={toggleGame("poe2")}
-        className={`rounded-md px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-all ${
+        className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide transition-colors ${
           game === "poe2"
-            ? "bg-white text-blue-600 shadow-sm ring-1 ring-slate-200"
+            ? "bg-white text-slate-900 shadow-sm"
             : "text-slate-500 hover:text-slate-700"
         }`}>
         PoE 2
@@ -71,7 +63,7 @@ const GameToggle = () => {
 const AreaCombobox = () => {
   const game = useQueryParam("game") === "poe2" ? "poe2" : "poe1";
   const version = useQueryParam("version");
-  const { data: areas } = useSuspenseQuery(getAreas(game, version));
+  const { data: areas } = useSuspenseQuery(getAreas(game, version!));
   const navigation = useNavigate();
   const location = useLocation();
   const selectedAreaId = useQueryParam("area");
@@ -159,7 +151,7 @@ const AreaCombobox = () => {
       </div>
       {open && (
         <div className="absolute left-0 right-0 top-full z-20 mt-2 rounded-md border border-slate-200 bg-white shadow-lg">
-          <div className="flex items-center justify-between px-3 py-2 text-xs text-slate-600 font-medium">
+          <div className="flex items-center justify-between px-3 py-2 text-xs text-slate-500">
             <span>
               Showing {visibleAreas.length} of {filteredAreas.length}
             </span>
@@ -190,19 +182,13 @@ const AreaCombobox = () => {
 
 const LoadingProgress = () => {
   const progress = useAtomValue(dbLoadingProgress);
-  if (!progress) return <div>Loading...</div>;
-
-  const percentage =
-    progress.total > 0 ? Math.round((progress.loaded / progress.total) * 100) : null;
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="font-semibold text-slate-700">Loading...</div>
       <div className="text-sm text-slate-600 font-medium">
-        Downloading database:{" "}
-        {percentage !== null
-          ? `${percentage}%`
-          : `${(progress.loaded / 1024 / 1024).toFixed(1)} MB`}
+        {progress
+          ? `Downloading database: ${(progress.loaded / 1024 / 1024).toFixed(1)} MB`
+          : "Loading..."}
       </div>
     </div>
   );
@@ -248,7 +234,7 @@ export function App() {
       <ResizeObserver onResize={({ height }) => setHeaderHeight(height)}>
         <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/90 backdrop-blur">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-2">
-            <div className="text-lg font-semibold tracking-tight text-slate-900">poe webapp</div>
+            <div className="text-lg font-semibold tracking-tight text-slate-900">repoe webapp</div>
             <GameToggle />
             <nav className="flex flex-wrap gap-2">
               <NavLink label="Home" href={homeHref} active={tab === "home"} />
@@ -257,7 +243,12 @@ export function App() {
               <NavLink label="About" href={aboutHref} active={tab === "about"} />
             </nav>
             <div className="ml-auto">
-              <Suspense fallback={<div className="text-xs text-slate-600 font-medium animate-pulse">Loading areas...</div>}>
+              <Suspense
+                fallback={
+                  <div className="text-xs text-slate-600 font-medium animate-pulse">
+                    Loading areas...
+                  </div>
+                }>
                 {tab === "areas" ? <AreaCombobox /> : null}
               </Suspense>
             </div>
