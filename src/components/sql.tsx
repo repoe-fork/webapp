@@ -1,5 +1,5 @@
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { initSqlJs, Database } from "fts5-sql-bundle";
+import { initSqlJs } from "fts5-sql-bundle";
 // @ts-ignore
 import wasm from "fts5-sql-bundle/dist/sql-wasm.wasm?url";
 import {
@@ -8,17 +8,15 @@ import {
   FC,
   PropsWithChildren,
   SetStateAction,
+  useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
-  useEffect,
-  useCallback,
 } from "react";
-import {
-  useLocation,
-  useNavigate,
-} from "use-navigation-api";
+import { useLocation, useNavigate } from "use-navigation-api";
 import CodeMirror, { keymap } from "@uiw/react-codemirror";
+import { githubLight } from "@uiw/codemirror-theme-github";
 import { sql as sqlLang, SQLite } from "@codemirror/lang-sql";
 import { syntaxTree } from "@codemirror/language";
 import { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
@@ -26,9 +24,9 @@ import { Prec } from "@codemirror/state";
 import { SearchWidget } from "./SearchWidget";
 import { Alert } from "components/ui/alert";
 import { Button } from "components/ui/button";
-import { createVfsDbWorker } from "../lib/sqlite-vfs";
+import { createVfsDbWorker } from "lib/sqlite-vfs";
 import { getDefaultStore } from "jotai";
-import { dbLoadingProgress } from "../state/dbLoading";
+import { dbLoadingProgress } from "state/dbLoading";
 
 const SQL = initSqlJs({ locateFile: () => wasm });
 
@@ -95,7 +93,9 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
   const [relations, setRelations] = useState<Record<string, string>>({});
 
   const tableColIndex = columns.indexOf("table");
-  const rowColIndex = columns.findIndex(c => c.toLowerCase() === "row" || c.toLowerCase() === "rowid");
+  const rowColIndex = columns.findIndex(
+    (c) => c.toLowerCase() === "row" || c.toLowerCase() === "rowid",
+  );
 
   const sourceTableColIndex = columns.indexOf("source_table");
   const sourceRowColIndex = columns.indexOf("source_row");
@@ -218,8 +218,7 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
               <th
                 key={columnName}
                 className="cursor-pointer px-4 py-3 border-b border-slate-200 hover:bg-slate-100 transition-colors"
-                onClick={() => handleSort(columnName)}
-              >
+                onClick={() => handleSort(columnName)}>
                 {columnName}
               </th>
             ))}
@@ -232,8 +231,7 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
               {row.map((value, cellIndex) => (
                 <td
                   key={cellIndex}
-                  className="px-4 py-2 text-slate-700 whitespace-nowrap overflow-hidden max-w-[400px] text-ellipsis border-b border-slate-50"
-                >
+                  className="px-4 py-2 text-slate-700 whitespace-nowrap overflow-hidden max-w-[400px] text-ellipsis border-b border-slate-50">
                   {relations[columns[cellIndex]] ? (
                     <button
                       className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
@@ -241,11 +239,10 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
                         const targetTable = relations[columns[cellIndex]];
                         const rowId = getTargetRowId(rowIndex);
                         const sourceTable = getTargetTable(rowIndex);
-                        const newSql = `SELECT * FROM "${targetTable}" WHERE rowid IN (SELECT target_row FROM relations WHERE source_table = '${sourceTable}' AND source_column = '${columns[cellIndex]}' AND source_row = ${rowId})`;
+                        const newSql = `SELECT rowid, * FROM "${targetTable}" WHERE rowid IN (SELECT target_row FROM relations WHERE source_table = '${sourceTable}' AND source_column = '${columns[cellIndex]}' AND source_row = ${rowId})`;
                         setSql(newSql);
                         onNavigate(newSql);
-                      }}
-                    >
+                      }}>
                       {String(value)}
                     </button>
                   ) : (
@@ -260,8 +257,7 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
                     size="sm"
                     className="h-7 w-7 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                     title="Find related (target) row"
-                    onClick={() => findRelated(rowIndex)}
-                  >
+                    onClick={() => findRelated(rowIndex)}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -271,8 +267,7 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
                       stroke="currentColor"
                       strokeWidth="2.5"
                       strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
+                      strokeLinejoin="round">
                       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                       <polyline points="15 3 21 3 21 9" />
                       <line x1="10" y1="14" x2="21" y2="3" />
@@ -283,8 +278,7 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
                     size="sm"
                     className="h-7 w-7 p-0 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
                     title="Find referencing rows"
-                    onClick={() => findReferencing(rowIndex)}
-                  >
+                    onClick={() => findReferencing(rowIndex)}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="16"
@@ -294,8 +288,7 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
                       stroke="currentColor"
                       strokeWidth="2.5"
                       strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
+                      strokeLinejoin="round">
                       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 1 1-7.6-10.8 8.5 8.5 0 0 1 6.3 2.7l-3.3 3.3H21V3l-3.3 3.3" />
                     </svg>
                   </Button>
@@ -312,7 +305,9 @@ const ResultTable: FC<{ result: QueryExecResult }> = ({
 const SqlEditor: FC = () => {
   const { sql, setSql, setPage, worker, onRunQuery } = useContext(SQLContext);
   const [schema, setSchema] = useState<Record<string, { name: string; type: string }[]>>({});
-  const [relationsInfo, setRelationsInfo] = useState<Record<string, { column: string; target: string }[]>>({});
+  const [relationsInfo, setRelationsInfo] = useState<
+    Record<string, { column: string; target: string }[]>
+  >({});
 
   useEffect(() => {
     const fetchSchema = async () => {
@@ -346,7 +341,8 @@ const SqlEditor: FC = () => {
           }
         } else {
           // Fallback for older SQLite versions
-          const tableSql = "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'";
+          const tableSql =
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'";
           let tables: any[];
           if (isVfs) {
             tables = await worker.db.query(tableSql);
@@ -366,12 +362,14 @@ const SqlEditor: FC = () => {
         const newSchema: Record<string, { name: string; type: string }[]> = {};
         for (const row of rows) {
           if (!newSchema[row.table_name]) newSchema[row.table_name] = [];
-          if (row.column_name) newSchema[row.table_name].push({ name: row.column_name, type: row.type });
+          if (row.column_name)
+            newSchema[row.table_name].push({ name: row.column_name, type: row.type });
         }
         setSchema(newSchema);
 
         // Fetch relations info for smart joins
-        const relInfoSql = "SELECT DISTINCT source_table, source_column, target_table FROM relations";
+        const relInfoSql =
+          "SELECT DISTINCT source_table, source_column, target_table FROM relations";
         let relRows: any[] = [];
         try {
           if (isVfs) {
@@ -381,10 +379,13 @@ const SqlEditor: FC = () => {
             while (stmt.step()) relRows.push(stmt.getAsObject());
             stmt.free();
           }
-          const newRelInfo: Record<string, { column: string; target: string }[] > = {};
+          const newRelInfo: Record<string, { column: string; target: string }[]> = {};
           for (const row of relRows) {
             if (!newRelInfo[row.source_table]) newRelInfo[row.source_table] = [];
-            newRelInfo[row.source_table].push({ column: row.source_column, target: row.target_table });
+            newRelInfo[row.source_table].push({
+              column: row.source_column,
+              target: row.target_table,
+            });
           }
           setRelationsInfo(newRelInfo);
         } catch (e) {
@@ -494,7 +495,10 @@ const SqlEditor: FC = () => {
     return res;
   }, [schema]);
 
-  const sqlSupport = useMemo(() => sqlLang({ schema: schemaForLang, dialect: SQLite }), [schemaForLang]);
+  const sqlSupport = useMemo(
+    () => sqlLang({ schema: schemaForLang, dialect: SQLite }),
+    [schemaForLang],
+  );
 
   const extensions = useMemo(
     () => [
@@ -537,14 +541,14 @@ const SqlEditor: FC = () => {
       className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm"
       data-testid="sql-editor"
       data-schema-loaded={Object.keys(schema).length > 0}
-      data-relations-loaded={Object.keys(relationsInfo).length > 0}
-    >
+      data-relations-loaded={Object.keys(relationsInfo).length > 0}>
       <CodeMirror
         value={sql}
         height="120px"
         extensions={extensions}
         onChange={onChange}
         className="text-sm"
+        theme={githubLight}
       />
     </div>
   );
@@ -566,7 +570,7 @@ export const SQLContext = createContext<{
 async function runQuery(dbOrWorker: any, sql: string, page: number = 0, pageSize: number = 0) {
   const results: QueryExecResult[] = [];
 
-  const isVfs = dbOrWorker.db && typeof dbOrWorker.db.query === 'function';
+  const isVfs = dbOrWorker.db && typeof dbOrWorker.db.query === "function";
 
   try {
     let columns: string[] = [];
@@ -654,9 +658,9 @@ export const SQLViewer: FC<
       try {
         const langSql = "SELECT name FROM sqlite_master WHERE type='table' AND sql LIKE '%FTS5%'";
         let rows: any[] = [];
-        if ('db' in query.data && typeof query.data.db.query === "function") {
+        if ("db" in query.data && typeof query.data.db.query === "function") {
           rows = await query.data.db.query(langSql);
-        } else if ('prepare' in query.data) {
+        } else if ("prepare" in query.data) {
           const stmt = query.data.prepare(langSql);
           while (stmt.step()) rows.push(stmt.getAsObject());
           stmt.free();
@@ -670,15 +674,6 @@ export const SQLViewer: FC<
     };
     fetchLanguages().catch(console.error);
   }, [query.data]);
-
-  const handleSearch = (table: string, queryText: string) => {
-    const ftsSql = queryText
-      ? `SELECT * FROM "${table}" WHERE "${table}" MATCH '${queryText.replace(/'/g, "''")}' ORDER BY rank`
-      : `SELECT * FROM "${table}"`;
-    setSql(ftsSql);
-    setPage(0);
-    onNavigate(ftsSql);
-  };
 
   const handleRunQuery = () => {
     onNavigate(sql);
@@ -696,7 +691,7 @@ export const SQLViewer: FC<
         setErr(e);
       }
     };
-    fetchResults();
+    fetchResults().catch(console.error);
   }, [query.data, committedSql, page, pageSize]);
 
   // Function to handle page changes
@@ -725,30 +720,32 @@ export const SQLViewer: FC<
         onNavigate,
         onRunQuery: handleRunQuery,
         languages,
-      }}
-    >
-      <div className="space-y-6">
-        <SearchWidget
-          languages={languages}
-          onSearch={handleSearch}
-          onRunQuery={handleRunQuery}
-        />
+      }}>
+      <div
+        className="space-y-6"
+        onKeyDown={(e) => {
+          if (e.ctrlKey && e.key === "Enter") {
+            e.preventDefault();
+            handleRunQuery();
+          }
+        }}>
+        <SearchWidget languages={languages} onChange={setSql} onRunQuery={handleRunQuery} />
         <div className="space-y-2">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">SQL Query</h3>
+            <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">
+              SQL Query
+            </h3>
             <span className="text-xs text-slate-500 font-medium">Ctrl+Enter to run</span>
           </div>
           {children}
         </div>
-        {err ? (
-          <Alert variant="destructive">
-            {String(err)}
-          </Alert>
-        ) : null}
+        {err ? <Alert variant="destructive">{String(err)}</Alert> : null}
         <div className="space-y-2">
           {res && res.length > 0 && (
             <div className="flex items-center justify-between px-1">
-              <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">Results</h3>
+              <h3 className="text-sm font-semibold text-slate-700 uppercase tracking-wider">
+                Results
+              </h3>
               <span className="text-xs text-slate-500 font-medium">
                 Showing {res[0].values.length} rows
               </span>
@@ -767,7 +764,9 @@ export const SQLViewer: FC<
             Previous
           </Button>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-600 uppercase tracking-tighter">Page</span>
+            <span className="text-xs font-semibold text-slate-600 uppercase tracking-tighter">
+              Page
+            </span>
             <span className="flex items-center justify-center h-7 w-7 rounded bg-white border border-slate-200 text-sm font-bold text-blue-600 shadow-sm">
               {page + 1}
             </span>
