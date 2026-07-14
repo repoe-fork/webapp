@@ -44,6 +44,8 @@ jobs:
         run: npx playwright install --with-deps
       - name: run e2e tests
         run: npm run e2e
+      - name: remove db files
+        run: rm public/poe1/dat.sqlite public/poe2/dat.sqlite
       - name: build app
         run: npm run build
       - name: upload pages
